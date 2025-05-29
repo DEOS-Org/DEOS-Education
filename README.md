@@ -40,4 +40,3 @@ Escuela Técnica de la Universidad de Mendoza – 6° Año Informática
 ## 📦 Presupuesto estimado
 
 Total: **$65.299 ARS**  
-Muchos componentes fueron provistos por la escuela o realizados por los propios alumnos.
