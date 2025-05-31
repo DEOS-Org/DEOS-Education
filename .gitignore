@@ -1,0 +1,24 @@
+# Node.js
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Variables de entorno
+.env
+
+# Logs
+*.log
+
+# IDE / editor (VSCode, JetBrains, etc.)
+.vscode/
+.idea/
+
+# macOS system files
+.DS_Store
+
+# Editor swap files
+*.swp
+
+# Git itself
+.git/
