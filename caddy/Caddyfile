@@ -16,4 +16,8 @@
 	handle_path /panel* {
 		reverse_proxy http://panel:80
 	}
+
+    handle /* {
+        reverse_proxy frontend:80
+    }	
 }
