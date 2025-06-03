@@ -1,0 +1,397 @@
+-- Adminer 5.3.0 MariaDB 10.5.29-MariaDB-ubu2004 dump
+
+SET NAMES utf8;
+SET time_zone = '+00:00';
+SET foreign_key_checks = 0;
+SET sql_mode = 'NO_AUTO_VALUE_ON_ZERO';
+
+SET NAMES utf8mb4;
+
+DROP TABLE IF EXISTS `curso`;
+CREATE TABLE `curso` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `año` int(11) DEFAULT NULL COMMENT 'Ej: 5',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT INTO `curso` (`id`, `año`) VALUES
+(1,	1),
+(2,	2),
+(3,	3),
+(4,	4),
+(5,	5),
+(6,	6);
+
+DROP TABLE IF EXISTS `curso_division`;
+CREATE TABLE `curso_division` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `curso_id` int(11) DEFAULT NULL,
+  `division_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `curso_id` (`curso_id`),
+  KEY `division_id` (`division_id`),
+  CONSTRAINT `curso_division_ibfk_1` FOREIGN KEY (`curso_id`) REFERENCES `curso` (`id`),
+  CONSTRAINT `curso_division_ibfk_2` FOREIGN KEY (`division_id`) REFERENCES `division` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT INTO `curso_division` (`id`, `curso_id`, `division_id`) VALUES
+(1,	1,	1),
+(2,	1,	2),
+(3,	2,	1),
+(4,	2,	2),
+(5,	3,	3),
+(6,	3,	4),
+(7,	4,	3),
+(8,	4,	4),
+(9,	5,	3),
+(10,	5,	4),
+(11,	6,	3),
+(12,	6,	4);
+
+DROP TABLE IF EXISTS `curso_division_materia`;
+CREATE TABLE `curso_division_materia` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `materia_id` int(11) DEFAULT NULL,
+  `curso_division_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `curso_division_id` (`curso_division_id`,`materia_id`),
+  KEY `materia_id` (`materia_id`),
+  CONSTRAINT `curso_division_materia_ibfk_1` FOREIGN KEY (`materia_id`) REFERENCES `materia` (`id`),
+  CONSTRAINT `curso_division_materia_ibfk_2` FOREIGN KEY (`curso_division_id`) REFERENCES `curso_division` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT INTO `curso_division_materia` (`id`, `materia_id`, `curso_division_id`) VALUES
+(1,	1,	11),
+(2,	2,	11),
+(3,	3,	11),
+(4,	4,	11),
+(5,	5,	11),
+(6,	6,	11),
+(7,	7,	11),
+(8,	8,	11),
+(9,	9,	11),
+(10,	10,	11),
+(11,	11,	11);
+
+DROP TABLE IF EXISTS `division`;
+CREATE TABLE `division` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `division` varchar(50) DEFAULT NULL COMMENT 'Ej: Informática / Electrónica',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT INTO `division` (`id`, `division`) VALUES
+(1,	'A'),
+(2,	'B'),
+(3,	'Informática'),
+(4,	'Electrónica');
+
+DROP TABLE IF EXISTS `horario`;
+CREATE TABLE `horario` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `curso_divisiones_id` int(11) DEFAULT NULL,
+  `dia` enum('Lunes','Martes','Miércoles','Jueves','Viernes') DEFAULT NULL,
+  `hora_inicio` time DEFAULT NULL,
+  `hora_fin` time DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `curso_divisiones_id` (`curso_divisiones_id`),
+  CONSTRAINT `horario_ibfk_1` FOREIGN KEY (`curso_divisiones_id`) REFERENCES `curso_division` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+DROP TABLE IF EXISTS `huella`;
+CREATE TABLE `huella` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `usuario_id` int(11) DEFAULT NULL,
+  `sensor_id` int(11) DEFAULT NULL COMMENT 'ID asignado en el sensor AS608 (0–127)',
+  `template` text DEFAULT NULL COMMENT 'Huella codificada (base64 o string binario)',
+  `fecha_registro` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `usuario_id` (`usuario_id`),
+  UNIQUE KEY `sensor_id` (`sensor_id`),
+  CONSTRAINT `huella_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuario` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+DROP TABLE IF EXISTS `log`;
+CREATE TABLE `log` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `usuario_id` int(11) DEFAULT NULL COMMENT 'Usuario que originó la acción o fue afectado',
+  `tipo` enum('error','configuracion','seguridad','conexion','otro') DEFAULT NULL,
+  `descripcion` text DEFAULT NULL COMMENT 'Descripción detallada del evento',
+  `origen` varchar(100) DEFAULT NULL COMMENT 'Ej: ESP32 - Aula 4, Panel Admin, Node-RED',
+  `fecha` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `usuario_id` (`usuario_id`),
+  CONSTRAINT `log_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuario` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+DROP TABLE IF EXISTS `materia`;
+CREATE TABLE `materia` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(100) DEFAULT NULL,
+  `carga_horaria` int(11) DEFAULT NULL COMMENT 'Horas semanales o anuales',
+  `carga_horaria_minutos` int(11) GENERATED ALWAYS AS (`carga_horaria` * 40) STORED,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `nombre` (`nombre`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT INTO `materia` (`id`, `nombre`, `carga_horaria`) VALUES
+(1,	'Comunicacion de Datos',	4),
+(2,	'Lab de Software',	5),
+(3,	'Lab de Redes 2',	5),
+(4,	'Ed Fisica',	2),
+(5,	'Programacion 4',	6),
+(6,	'Seguridad Informatica',	4),
+(7,	'Proyecto Integrador',	5),
+(8,	'Etica y Legislacion Laboral',	4),
+(9,	'Formacion y Evaluacion de Proyectos',	4),
+(10,	'Practicas Profesionalizantes',	3),
+(11,	'Orientacion y Tutoria',	2);
+
+DROP TABLE IF EXISTS `profesor_materia`;
+CREATE TABLE `profesor_materia` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `usuario_id` int(11) DEFAULT NULL,
+  `materia_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `usuario_id` (`usuario_id`,`materia_id`),
+  KEY `materia_id` (`materia_id`),
+  CONSTRAINT `profesor_materia_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuario` (`id`),
+  CONSTRAINT `profesor_materia_ibfk_2` FOREIGN KEY (`materia_id`) REFERENCES `materia` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT INTO `profesor_materia` (`id`, `usuario_id`, `materia_id`) VALUES
+(1,	42,	1),
+(2,	43,	2),
+(3,	43,	7),
+(4,	44,	3),
+(5,	45,	4),
+(6,	46,	5),
+(7,	47,	6),
+(8,	48,	8),
+(9,	49,	10),
+(10,	50,	9),
+(11,	51,	11);
+
+DROP TABLE IF EXISTS `registro`;
+CREATE TABLE `registro` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `usuario_id` int(11) DEFAULT NULL,
+  `tipo` enum('ingreso','egreso') DEFAULT NULL COMMENT 'Indica si es un ingreso o salida de la escuela',
+  `fecha` datetime DEFAULT NULL,
+  `origen` varchar(100) DEFAULT NULL COMMENT 'Ej: ESP32 - Aula 4',
+  PRIMARY KEY (`id`),
+  KEY `usuario_id` (`usuario_id`),
+  CONSTRAINT `registro_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuario` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+DROP TABLE IF EXISTS `rol`;
+CREATE TABLE `rol` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(50) DEFAULT NULL COMMENT 'admin, preceptor, alumno, directivo, profesor',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `nombre` (`nombre`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT INTO `rol` (`id`, `nombre`) VALUES
+(1,	'admin'),
+(3,	'alumno'),
+(4,	'directivo'),
+(2,	'preceptor'),
+(5,	'profesor');
+
+DROP TABLE IF EXISTS `usuario`;
+CREATE TABLE `usuario` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `dni` varchar(15) NOT NULL,
+  `nombre` varchar(100) DEFAULT NULL,
+  `apellido` varchar(100) DEFAULT NULL,
+  `email` varchar(100) DEFAULT NULL,
+  `contraseña` varchar(255) DEFAULT NULL,
+  `activo` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `dni` (`dni`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT INTO `usuario` (`id`, `dni`, `nombre`, `apellido`, `email`, `contraseña`, `activo`, `created_at`, `updated_at`) VALUES
+(1,	'47727235',	'Valentin',	'Acieff',	'a.acieff@alumno.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(2,	'47531504',	'Pablo Benjamin',	'Carreras',	'p.carreras@alumno.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(3,	'47610427',	'Maximiliano Martin',	'Castro Corradi',	'mc.castro@alumno.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(4,	'48038589',	'Benicio',	'Corro',	'b.corro@alumno.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(5,	'47531005',	'Lucas Emilio',	'Cruceño Fratti',	'l.cruseno@alumno.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(6,	'47966018',	'Ulises',	'Dalmau Abad',	'u.dalmau@alumno.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(7,	'47874238',	'Matias Federico',	'Diaz Corvalan',	'mfc.diaz@alumno.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(8,	'47529260',	'Lander',	'Echavarria',	'l.echavarria@alummo.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(9,	'47447715',	'Bruno',	'Emili',	'b.emili@alumno.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(10,	'47811164',	'Naiara Belen',	'Errecalde',	'n.errecalde@alumno.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(11,	'47966065',	'Tomás Alejandro',	'Fuentes Barraquero',	't.fuente@alummo.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(12,	'47811476',	'Iñaki',	'Gongora Rosi',	'i.gongora@alumno.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(13,	'47811194',	'Facundo',	'Gonzalez Pelaitai',	'fp.gonzalez@alumno.etec.um.edu.ar',	'$2a$12$S/jfdYtcgclZ2l.7z1wyTuIGN8/aWKOrTtsZ51HeiWU1j2rQ6E6kS',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(14,	'47809973',	'Facundo Mariano',	'Llamas',	'f.llamas@alumno.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(15,	'47808695',	'Ignacio Sebastián',	'Maldonado',	'i.maldonado@alumno.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(16,	'48076506',	'Lucio',	'Manitta Mazzaresi',	'lm.manitta@alumno.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(17,	'47611730',	'Santiago',	'Marthi',	's.marthi@alumno.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(18,	'47725886',	'Matias Nicolas',	'Paez Delgadillo',	'mn.paez@alumno.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(19,	'47529283',	'Federico',	'Pagano Guiñazú',	'fg.pagano@alumno.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(20,	'47726037',	'Lucas Alejandro',	'Rada Lizarraga',	'l.rada@alumno.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(21,	'47532232',	'Juan Martín',	'Romito Nazar',	'j.romito@alumno.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(22,	'47811247',	'Santino',	'Sabatini Cialone',	'sc.sabatini@alumno.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(23,	'47373027',	'Ivo',	'Schugurensky',	'i.schugurensky@alumno.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(24,	'47967442',	'Emilio',	'Varaschin',	'e.varaschin@alumno.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(25,	'47532442',	'Amparo Maria',	'Appiolaza Carabal',	'a.appiolaza@alumno.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(26,	'47611777',	'Lucas',	'Brusotti Velasco',	'l.brusotti@alumno.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(27,	'47529800',	'Victoria Elisa',	'Castillo Lagazzi',	've.castillo@alumno.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(28,	'48050669',	'Nicolas Mateo',	'Castro Reale',	'mn.castro@alumno.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(29,	'47613237',	'Francisco',	'Derka Payeres',	'f.derka@alumno.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(30,	'48051568',	'Mauricio Andres',	'Duca Garritano',	'm.duca@alumno.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(31,	'47268993',	'Ignacio',	'Funes Ivulich',	'ii.funes@alumno.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(32,	'47300466',	'Lucia Anabella',	'Garrido',	'l.garrido@alumno.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(33,	'47573490',	'Noha Ezequiel',	'Guerrero',	'ne.guerrero@alumno.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(34,	'48050693',	'Manuel',	'Juñent Allegrini',	'm.junent@alumno.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(35,	'47602482',	'Mariano',	'Lopez Fara',	'mafa.lopez@alummo.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(36,	'47532417',	'Lautaro',	'Malisani',	'l.malisani@alumno.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(37,	'47969046',	'Sebastian',	'Manno Velez',	's.manno@alumno.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(38,	'47532409',	'Facundo',	'Ortiz',	'fh.ortiz@alumno.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(39,	'47448084',	'María Pilar',	'Perez Pasten',	'mp.perez@alumno.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(40,	'51701752',	'Martin',	'Rubio Dussel',	'md.rubio@alumno.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(41,	'47610440',	'Angel Agustin',	'Vega',	'ana.vega@alumno.etec.um.edu.ar',	'',	1,	'2025-06-02 13:38:34',	'2025-06-02 13:38:34'),
+(42,	'P-1',	'Hector',	'Correa',	'hector.correa@etec.um.edu.ar',	'',	1,	'2025-06-02 14:28:29',	'2025-06-02 14:28:29'),
+(43,	'P-2',	'Daniel',	'Quinteros',	'daniel.quinteros@etec.um.edu.ar',	'',	1,	'2025-06-02 14:28:29',	'2025-06-02 14:28:29'),
+(44,	'P-3',	'Raul',	'Vargas',	'raul.vargas@etec.um.edu.ar',	'',	1,	'2025-06-02 14:28:29',	'2025-06-02 14:28:29'),
+(45,	'P-4',	'Guillermo',	'César Sanchez',	'guillermo.sanchez@etec.um.edu.ar',	'',	1,	'2025-06-02 14:28:29',	'2025-06-02 14:28:29'),
+(46,	'P-5',	'Alejandro',	'Marchena',	'alejandro.marchena@etec.um.edu.ar',	'',	1,	'2025-06-02 14:28:29',	'2025-06-02 14:28:29'),
+(47,	'P-6',	'Ceferino',	'Mulet',	'ceferino.mulet@etec.um.edu.ar',	'',	1,	'2025-06-02 14:28:29',	'2025-06-02 14:28:29'),
+(48,	'P-7',	'Gabriela',	'Millares',	'gabriela.millares@etec.um.edu.ar',	'',	1,	'2025-06-02 14:28:29',	'2025-06-02 14:28:29'),
+(49,	'P-8',	'Paula Carina',	'Marañon',	'paula.maranon@etec.um.edu.ar',	'',	1,	'2025-06-02 14:28:29',	'2025-06-02 14:28:29'),
+(50,	'P-9',	'Matias',	'Albornoz',	'matias.albornoz@etec.um.edu.ar',	'',	1,	'2025-06-02 14:28:29',	'2025-06-02 14:28:29'),
+(51,	'P-10',	'Carla',	'Fabretti',	'carla.fabbretti@etec.um.edu.ar',	'',	1,	'2025-06-02 14:28:29',	'2025-06-02 14:28:29'),
+(52,	'00000001',	'admin',	'FG',	'admin@etec.um.edu.ar',	'$2a$12$QEF53y8ORlwRnKpKNdFYxun.dgXbRJuZusUbwCg6.iERe34mCk0US',	1,	'2025-06-03 13:38:07',	'2025-06-03 13:38:07'),
+(53,	'12345678',	'Test',	'User',	'test.user@alumno.etec.um.edu.ar',	'$2b$12$oiYQwXTDMrK.Ed3QEm/f5.mfdQ9q7P566XnnMgyutKSPF43cmXTgm',	1,	'2025-06-03 13:43:43',	'2025-06-03 13:43:43');
+
+DROP TABLE IF EXISTS `usuario_curso`;
+CREATE TABLE `usuario_curso` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `usuario_id` int(11) DEFAULT NULL,
+  `curso_division_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `usuario_id` (`usuario_id`),
+  KEY `curso_division_id` (`curso_division_id`),
+  CONSTRAINT `usuario_curso_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuario` (`id`),
+  CONSTRAINT `usuario_curso_ibfk_2` FOREIGN KEY (`curso_division_id`) REFERENCES `curso_division` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT INTO `usuario_curso` (`id`, `usuario_id`, `curso_division_id`) VALUES
+(1,	1,	11),
+(2,	2,	11),
+(3,	3,	11),
+(4,	4,	11),
+(5,	5,	11),
+(6,	6,	11),
+(7,	7,	11),
+(8,	8,	11),
+(9,	9,	11),
+(10,	10,	11),
+(11,	11,	11),
+(12,	12,	11),
+(13,	13,	11),
+(14,	14,	11),
+(15,	15,	11),
+(16,	16,	11),
+(17,	17,	11),
+(18,	18,	11),
+(19,	19,	11),
+(20,	20,	11),
+(21,	21,	11),
+(22,	22,	11),
+(23,	23,	11),
+(24,	24,	11),
+(25,	25,	12),
+(26,	26,	12),
+(27,	27,	12),
+(28,	28,	12),
+(29,	29,	12),
+(30,	30,	12),
+(31,	31,	12),
+(32,	32,	12),
+(33,	33,	12),
+(34,	34,	12),
+(35,	35,	12),
+(36,	36,	12),
+(37,	37,	12),
+(38,	38,	12),
+(39,	39,	12),
+(40,	40,	12),
+(41,	41,	12);
+
+DROP TABLE IF EXISTS `usuario_rol`;
+CREATE TABLE `usuario_rol` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `usuario_id` int(11) DEFAULT NULL,
+  `rol_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `usuario_id` (`usuario_id`,`rol_id`),
+  KEY `rol_id` (`rol_id`),
+  CONSTRAINT `usuario_rol_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuario` (`id`),
+  CONSTRAINT `usuario_rol_ibfk_2` FOREIGN KEY (`rol_id`) REFERENCES `rol` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT INTO `usuario_rol` (`id`, `usuario_id`, `rol_id`) VALUES
+(1,	1,	3),
+(52,	2,	3),
+(53,	2,	5),
+(3,	3,	3),
+(4,	4,	3),
+(5,	5,	3),
+(6,	6,	3),
+(7,	7,	3),
+(8,	8,	3),
+(9,	9,	3),
+(10,	10,	3),
+(11,	11,	3),
+(12,	12,	3),
+(13,	13,	1),
+(14,	14,	3),
+(15,	15,	3),
+(16,	16,	3),
+(17,	17,	3),
+(18,	18,	3),
+(19,	19,	3),
+(20,	20,	3),
+(21,	21,	3),
+(22,	22,	3),
+(23,	23,	3),
+(24,	24,	3),
+(25,	25,	3),
+(26,	26,	3),
+(27,	27,	3),
+(28,	28,	3),
+(29,	29,	3),
+(30,	30,	3),
+(31,	31,	3),
+(32,	32,	3),
+(33,	33,	3),
+(34,	34,	3),
+(35,	35,	3),
+(36,	36,	3),
+(37,	37,	3),
+(38,	38,	3),
+(39,	39,	3),
+(40,	40,	3),
+(41,	41,	3),
+(42,	42,	5),
+(43,	43,	5),
+(44,	44,	5),
+(45,	45,	2),
+(46,	46,	5),
+(47,	47,	5),
+(48,	48,	5),
+(49,	49,	4),
+(50,	50,	5),
+(51,	53,	3);
+
+-- 2025-06-03 13:46:19 UTC

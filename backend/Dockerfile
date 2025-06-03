@@ -4,4 +4,4 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
-CMD ["node", "src/app.js"]
+CMD ["npx", "ts-node", "src/app.ts"]
