@@ -1,30 +1,30 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import * as jwt from 'jsonwebtoken';
+import { UserPayload } from '../types/express';
 
-export const authenticate = (req: Request, res: Response, next: NextFunction) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ message: 'Token no proporcionado' });
-  }
-  const token = authHeader.split(' ')[1];
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+
+export const authenticate = (req: Request, res: Response, next: NextFunction): void => {
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
-    (req as any).user = decoded;
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      res.status(401).json({ message: 'Token no proporcionado' });
+      return;
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET) as UserPayload;
+    req.user = decoded;
     next();
   } catch (error) {
-    return res.status(401).json({ message: 'Token inválido' });
+    res.status(401).json({ message: 'Token inválido' });
   }
 };
 
-export const authorizeRoles = (...roles: string[]) => {
-  return (req: Request, res: Response, next: NextFunction) => {
-    const user = (req as any).user;
-    if (!user || !user.roles) {
-      return res.status(403).json({ message: 'Acceso denegado' });
-    }
-    const hasRole = user.roles.some((role: string) => roles.includes(role));
-    if (!hasRole) {
-      return res.status(403).json({ message: 'No tenés permisos suficientes' });
+export const authorizeRoles = (requiredRole: string) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    if (!req.user?.roles?.includes(requiredRole)) {
+      res.status(403).json({ message: 'No autorizado' });
+      return;
     }
     next();
   };

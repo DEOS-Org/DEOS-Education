@@ -79,5 +79,9 @@ const UsuarioRol = sequelize.define<UsuarioRolInstance>('UsuarioRol', {
 UsuarioRol.belongsTo(Usuario, { foreignKey: 'usuario_id' });
 UsuarioRol.belongsTo(Rol, { foreignKey: 'rol_id' });
 
+// Relaciones para include en queries
+Usuario.belongsToMany(Rol, { through: UsuarioRol, foreignKey: 'usuario_id', otherKey: 'rol_id' });
+Rol.belongsToMany(Usuario, { through: UsuarioRol, foreignKey: 'rol_id', otherKey: 'usuario_id' });
+
 // Exportar
 export { sequelize, Usuario, Rol, UsuarioRol };
