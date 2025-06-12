@@ -1,0 +1,286 @@
+<div class="dashboard-container">
+  <!-- Header Section -->
+  <div class="dashboard-header">
+    <div class="header-content">
+      <div class="institutional-info">
+        <div class="logo-section">
+          <mat-icon class="institution-logo">school</mat-icon>
+          <div class="institution-details">
+            <h1 class="institution-name">BioFirma v4</h1>
+            <p class="institution-subtitle">Sistema de Gestión Educativa</p>
+          </div>
+        </div>
+        <div class="welcome-section">
+          <p class="welcome-text">Bienvenido, Administrador</p>
+          <p class="current-date">{{ getCurrentDate() }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard-content" *ngIf="!isLoading; else loadingTemplate">
+    <!-- Statistics Overview -->
+    <div class="stats-section">
+      <h2 class="section-title">
+        <mat-icon>analytics</mat-icon>
+        Resumen Estadístico
+      </h2>
+      <div class="stats-grid">
+        <div class="stat-card" *ngFor="let card of dashboardCards" 
+             [ngClass]="getCardClass(card.color)"
+             style="cursor: pointer;"
+             (click)="navigateToCard(card)">
+          <div class="stat-icon-container">
+            <mat-icon class="stat-icon">{{ card.icon }}</mat-icon>
+          </div>
+          <div class="stat-details">
+            <h3 class="stat-title">{{ card.title }}</h3>
+            <div class="stat-value">{{ card.value }}</div>
+            <p class="stat-description">{{ getCardDescription(card.title) }}</p>
+          </div>
+          <mat-icon class="navigation-arrow">arrow_forward_ios</mat-icon>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="actions-section">
+      <h2 class="section-title">
+        <mat-icon>speed</mat-icon>
+        Acciones Rápidas
+      </h2>
+      <div class="action-grid">
+        <mat-card class="action-card primary-action" routerLink="/admin/users">
+          <mat-card-content>
+            <div class="action-icon-container">
+              <mat-icon>person_add</mat-icon>
+            </div>
+            <h3>Gestión de Usuarios</h3>
+            <p>Crear y administrar usuarios del sistema</p>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="action-card secondary-action" routerLink="/admin/academic">
+          <mat-card-content>
+            <div class="action-icon-container">
+              <mat-icon>school</mat-icon>
+            </div>
+            <h3>Gestión Académica</h3>
+            <p>Administrar cursos, materias y divisiones</p>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="action-card tertiary-action" routerLink="/admin/reports">
+          <mat-card-content>
+            <div class="action-icon-container">
+              <mat-icon>assessment</mat-icon>
+            </div>
+            <h3>Reportes y Análisis</h3>
+            <p>Generar reportes de asistencia y estadísticas</p>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="action-card quaternary-action" routerLink="/admin/devices">
+          <mat-card-content>
+            <div class="action-icon-container">
+              <mat-icon>fingerprint</mat-icon>
+            </div>
+            <h3>Sistema Biométrico</h3>
+            <p>Gestionar dispositivos y registros biométricos</p>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+
+    <!-- Attendance Analytics Section -->
+    <div class="attendance-section">
+      <h2 class="section-title">
+        <mat-icon>analytics</mat-icon>
+        Análisis de Asistencia
+        <span class="demo-badge" *ngIf="attendanceData.length === 0 || isUsingDemoData">
+          DEMO
+        </span>
+      </h2>
+      
+      <!-- Attendance Summary Cards -->
+      <div class="attendance-summary-cards">
+        <mat-card class="attendance-summary-card">
+          <mat-card-content>
+            <div class="summary-icon-container">
+              <mat-icon class="summary-icon present">done</mat-icon>
+            </div>
+            <div class="summary-details">
+              <h3 class="summary-value">{{ attendanceStats.totalPresentes || 0 }}</h3>
+              <p class="summary-label">Presentes Hoy</p>
+              <span class="summary-trend positive" *ngIf="attendanceStats.trendPresentes > 0">
+                +{{ attendanceStats.trendPresentes }}% vs ayer
+              </span>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="attendance-summary-card">
+          <mat-card-content>
+            <div class="summary-icon-container">
+              <mat-icon class="summary-icon absent">close</mat-icon>
+            </div>
+            <div class="summary-details">
+              <h3 class="summary-value">{{ attendanceStats.totalAusentes || 0 }}</h3>
+              <p class="summary-label">Ausentes Hoy</p>
+              <span class="summary-trend negative" *ngIf="attendanceStats.trendAusentes > 0">
+                +{{ attendanceStats.trendAusentes }}% vs ayer
+              </span>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="attendance-summary-card">
+          <mat-card-content>
+            <div class="summary-icon-container">
+              <mat-icon class="summary-icon late">schedule</mat-icon>
+            </div>
+            <div class="summary-details">
+              <h3 class="summary-value">{{ attendanceStats.totalTarde || 0 }}</h3>
+              <p class="summary-label">Tardanzas Hoy</p>
+              <span class="summary-trend neutral">
+                {{ attendanceStats.promedioTardanzas || 0 }}% promedio semanal
+              </span>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="attendance-summary-card">
+          <mat-card-content>
+            <div class="summary-icon-container">
+              <mat-icon class="summary-icon percentage">trending_up</mat-icon>
+            </div>
+            <div class="summary-details">
+              <h3 class="summary-value">{{ attendanceStats.porcentajeAsistencia || 0 }}%</h3>
+              <p class="summary-label">Asistencia Promedio</p>
+              <span class="summary-trend positive" *ngIf="attendanceStats.porcentajeAsistencia >= 85">
+                Excelente nivel
+              </span>
+              <span class="summary-trend warning" *ngIf="attendanceStats.porcentajeAsistencia >= 70 && attendanceStats.porcentajeAsistencia < 85">
+                Nivel aceptable
+              </span>
+              <span class="summary-trend negative" *ngIf="attendanceStats.porcentajeAsistencia < 70">
+                Requiere atención
+              </span>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- Charts Section -->
+      <div class="charts-section">
+        <div class="charts-grid">
+          <!-- Bar Chart: Daily Attendance -->
+          <mat-card class="chart-card bar-chart-card">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>bar_chart</mat-icon>
+                Asistencia Diaria (Última Semana)
+              </mat-card-title>
+              <div class="chart-actions">
+                <button mat-icon-button matTooltip="Actualizar datos">
+                  <mat-icon>refresh</mat-icon>
+                </button>
+                <button mat-icon-button matTooltip="Exportar gráfico">
+                  <mat-icon>download</mat-icon>
+                </button>
+              </div>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="chart-container" id="dailyAttendanceChartContainer">
+                <canvas id="dailyAttendanceChart"></canvas>
+              </div>
+            </mat-card-content>
+          </mat-card>
+
+          <!-- Pie Chart: Attendance Distribution -->
+          <mat-card class="chart-card pie-chart-card">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>pie_chart</mat-icon>
+                Distribución de Asistencia
+              </mat-card-title>
+              <div class="chart-actions">
+                <button mat-icon-button matTooltip="Actualizar datos">
+                  <mat-icon>refresh</mat-icon>
+                </button>
+                <button mat-icon-button matTooltip="Exportar gráfico">
+                  <mat-icon>download</mat-icon>
+                </button>
+              </div>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="chart-container" id="attendanceDistributionChartContainer">
+                <canvas id="attendanceDistributionChart"></canvas>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+        <!-- Weekly Trend Chart -->
+        <mat-card class="chart-card trend-chart-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>show_chart</mat-icon>
+              Tendencia Semanal de Asistencia
+            </mat-card-title>
+            <div class="chart-actions">
+              <button mat-icon-button matTooltip="Ver por mes" (click)="toggleTimeframe()">
+                <mat-icon>date_range</mat-icon>
+              </button>
+              <button mat-icon-button matTooltip="Actualizar datos">
+                <mat-icon>refresh</mat-icon>
+              </button>
+            </div>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="chart-container trend-container" id="weeklyTrendChartContainer">
+              <canvas id="weeklyTrendChart"></canvas>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="activity-section">
+      <h2 class="section-title">
+        <mat-icon>history</mat-icon>
+        Actividad Reciente
+      </h2>
+      <mat-card class="activity-card">
+        <mat-card-content>
+          <div class="activity-item" *ngFor="let activity of recentActivities">
+            <div class="activity-icon">
+              <mat-icon>{{ activity.icon }}</mat-icon>
+            </div>
+            <div class="activity-details">
+              <p class="activity-description">{{ activity.description }}</p>
+              <span class="activity-time">{{ activity.time }}</span>
+            </div>
+          </div>
+          <div class="activity-item" *ngIf="recentActivities.length === 0">
+            <div class="activity-icon">
+              <mat-icon>info</mat-icon>
+            </div>
+            <div class="activity-details">
+              <p class="activity-description">No hay actividad reciente para mostrar</p>
+              <span class="activity-time">Sistema iniciado</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <ng-template #loadingTemplate>
+    <div class="loading-container">
+      <mat-spinner diameter="60" color="primary"></mat-spinner>
+      <p class="loading-text">Cargando panel de control...</p>
+    </div>
+  </ng-template>
+</div>

@@ -1,19 +1,22 @@
-:443 {
-	tls /certificados/fullchain.pem /certificados/privkey.pem
+{
+	admin off
+	auto_https off
+}
 
+:80 {
 	handle /api/* {
-		reverse_proxy http://backend:3001
+		reverse_proxy backend:3001
 	}
 
-	handle /nodered* {
-		reverse_proxy http://nodered:1880
+	handle /nodered/* {
+		reverse_proxy nodered:1880
 	}
 
-	handle_path /adminer* {
-		reverse_proxy http://adminer:8080
+	handle /adminer/* {
+		reverse_proxy adminer:8080
 	}
 
-	handle_path /panel* {
-		reverse_proxy http://panel:80
+	handle /mqtt/* {
+		reverse_proxy mosquitto:9001
 	}
 }

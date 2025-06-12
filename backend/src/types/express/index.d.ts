@@ -8,8 +8,18 @@ export interface UserPayload {
   [key: string]: any;
 }
 
+// Error personalizado de la aplicación
+export interface AppError extends Error {
+  statusCode?: number;
+  errors?: any[];
+}
+
 declare module 'express-serve-static-core' {
   interface Request {
     user?: UserPayload;
+  }
+
+  interface Response {
+    error?: (statusCode: number, message: string, errors?: any[]) => void;
   }
 }

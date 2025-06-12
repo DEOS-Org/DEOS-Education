@@ -20,12 +20,23 @@ export const authenticate = (req: Request, res: Response, next: NextFunction): v
   }
 };
 
-export const authorizeRoles = (requiredRole: string) => {
+export const authorizeRoles = (...roles: string[]) => {
   return (req: Request, res: Response, next: NextFunction): void => {
-    if (!req.user?.roles?.includes(requiredRole)) {
-      res.status(403).json({ message: 'No autorizado' });
+    if (!req.user) {
+      res.status(401).json({ message: 'No autenticado' });
       return;
     }
+
+    const hasRole = req.user.roles.some(role => roles.includes(role));
+    if (!hasRole) {
+      res.status(403).json({ 
+        message: 'No autorizado',
+        requiredRoles: roles,
+        userRoles: req.user.roles
+      });
+      return;
+    }
+
     next();
   };
 };
