@@ -5,58 +5,27 @@ import { asyncHandler } from '../middlewares/asyncHandler';
 
 const router = Router();
 
-// Crear usuario (solo admin)
-router.post(
-  '/',
-  authenticate as any,
-  authorizeRoles('admin') as any,
-  asyncHandler(userController.createUser)
-);
+// Rutas protegidas por autenticación (ya aplicada en app.ts)
+// router.use(authenticate);
 
-// Listar usuarios (solo admin)
-router.get(
-  '/',
-  authenticate as any,
-  authorizeRoles('admin') as any,
-  asyncHandler(userController.getUsers)
-);
+// Rutas de usuarios
+router.get('/', userController.getUsers);
+router.post('/', authorizeRoles('admin'), userController.createUser);
+router.get('/:id', userController.getUserById);
+router.get('/:id/student-detail', userController.getStudentDetail);
+router.get('/:id/professor-detail', userController.getProfessorDetail);
+router.put('/:id', authorizeRoles('admin'), userController.updateUser);
+router.delete('/:id', authorizeRoles('admin'), userController.deleteUser);
 
-// Ver detalle de usuario (admin o self)
-router.get(
-  '/:id',
-  authenticate as any,
-  asyncHandler(userController.getUserById)
-);
+// Rutas de roles
+router.post('/:id/roles', authorizeRoles('admin'), userController.assignRole);
+router.delete('/:id/roles', authorizeRoles('admin'), userController.removeRole);
+router.get('/:id/roles', userController.getUserRoles);
 
-// Editar usuario (admin o self)
-router.put(
-  '/:id',
-  authenticate as any,
-  asyncHandler(userController.updateUser)
-);
-
-// Asignar roles a usuario (solo admin)
-router.post(
-  '/:id/roles',
-  authenticate as any,
-  authorizeRoles('admin') as any,
-  asyncHandler(userController.assignRoles)
-);
-
-// Activar usuario (solo admin)
-router.patch(
-  '/:id/activate',
-  authenticate as any,
-  authorizeRoles('admin') as any,
-  asyncHandler(userController.activateUser)
-);
-
-// Desactivar usuario (solo admin)
-router.patch(
-  '/:id/deactivate',
-  authenticate as any,
-  authorizeRoles('admin') as any,
-  asyncHandler(userController.deactivateUser)
-);
+// Rutas de relación alumno-padre
+router.post('/alumnos/:alumnoId/padres', authorizeRoles('admin'), userController.assignParent);
+router.delete('/alumnos/:alumnoId/padres/:padreId', authorizeRoles('admin'), userController.removeParent);
+router.get('/alumnos/:alumnoId/padres', userController.getStudentParents);
+router.get('/padres/:padreId/alumnos', userController.getParentStudents);
 
 export default router;

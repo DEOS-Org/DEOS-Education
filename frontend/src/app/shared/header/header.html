@@ -1,0 +1,38 @@
+<mat-toolbar color="primary">
+  <button mat-icon-button (click)="toggleDrawer()" aria-label="Toggle sidenav">
+    <mat-icon>menu</mat-icon>
+  </button>
+  
+  <span class="app-title">
+    <mat-icon>school</mat-icon>
+    BioFirma v4
+  </span>
+  
+  <span class="spacer"></span>
+  
+  <div class="user-info" *ngIf="currentUser$ | async as user">
+    <button mat-button [matMenuTriggerFor]="userMenu" class="user-button">
+      <div class="user-details">
+        <span class="user-name">{{ getUserDisplayName(user) }}</span>
+        <span class="user-role">{{ getPrimaryRole(user) }}</span>
+      </div>
+      <mat-icon>account_circle</mat-icon>
+    </button>
+    
+    <mat-menu #userMenu="matMenu" xPosition="before">
+      <button mat-menu-item disabled>
+        <mat-icon>person</mat-icon>
+        <span>{{ getUserDisplayName(user) }}</span>
+      </button>
+      <button mat-menu-item disabled>
+        <mat-icon>badge</mat-icon>
+        <span>{{ getPrimaryRole(user) }}</span>
+      </button>
+      <mat-divider></mat-divider>
+      <button mat-menu-item (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        <span>Cerrar Sesión</span>
+      </button>
+    </mat-menu>
+  </div>
+</mat-toolbar>

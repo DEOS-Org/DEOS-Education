@@ -1,0 +1,280 @@
+<div class="course-division-details-container">
+  <!-- Loading Spinner -->
+  <div *ngIf="isLoading" class="loading-container">
+    <mat-spinner></mat-spinner>
+    <p>Cargando detalles del curso...</p>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!isLoading && details" class="details-content">
+    <!-- Header -->
+    <div class="header">
+      <div class="back-button-container">
+        <button mat-icon-button (click)="goBack()" color="primary">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        <div class="header-text">
+          <h2>
+            <mat-icon>class</mat-icon>
+            {{ details.nombre_completo }}
+          </h2>
+          <p>Detalles completos del curso y división</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+      <mat-card class="stat-card stat-card-primary">
+        <mat-card-content>
+          <div class="stat-content">
+            <mat-icon>people</mat-icon>
+            <div class="stat-info">
+              <h3>{{ details.estadisticas.total_estudiantes }}</h3>
+              <p>Estudiantes</p>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card stat-card-accent">
+        <mat-card-content>
+          <div class="stat-content">
+            <mat-icon>person</mat-icon>
+            <div class="stat-info">
+              <h3>{{ details.estadisticas.total_profesores }}</h3>
+              <p>Profesores</p>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card stat-card-warn">
+        <mat-card-content>
+          <div class="stat-content">
+            <mat-icon>book</mat-icon>
+            <div class="stat-info">
+              <h3>{{ details.estadisticas.total_materias }}</h3>
+              <p>Materias</p>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card stat-card-primary">
+        <mat-card-content>
+          <div class="stat-content">
+            <mat-icon>access_time</mat-icon>
+            <div class="stat-info">
+              <h3>{{ details.estadisticas.registros_recientes }}</h3>
+              <p>Registros Recientes</p>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Tabs with Details -->
+    <mat-tab-group>
+      <!-- Students Tab -->
+      <mat-tab label="Estudiantes">
+        <div class="tab-content">
+          <div class="tab-header">
+            <h3>
+              <mat-icon>people</mat-icon>
+              Lista de Estudiantes ({{ details.estudiantes.length }})
+            </h3>
+          </div>
+
+          <div *ngIf="details.estudiantes.length === 0" class="empty-state">
+            <mat-icon>info</mat-icon>
+            <h4>No hay estudiantes</h4>
+            <p>Este curso-división no tiene estudiantes asignados.</p>
+          </div>
+
+          <div *ngIf="details.estudiantes.length > 0">
+            <table mat-table [dataSource]="details.estudiantes" class="full-width-table">
+              <ng-container matColumnDef="dni">
+                <th mat-header-cell *matHeaderCellDef>DNI</th>
+                <td mat-cell *matCellDef="let estudiante">{{ estudiante.dni }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="nombre">
+                <th mat-header-cell *matHeaderCellDef>Nombre</th>
+                <td mat-cell *matCellDef="let estudiante">{{ estudiante.nombre }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="apellido">
+                <th mat-header-cell *matHeaderCellDef>Apellido</th>
+                <td mat-cell *matCellDef="let estudiante">{{ estudiante.apellido }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="email">
+                <th mat-header-cell *matHeaderCellDef>Email</th>
+                <td mat-cell *matCellDef="let estudiante">{{ estudiante.email }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="activo">
+                <th mat-header-cell *matHeaderCellDef>Estado</th>
+                <td mat-cell *matCellDef="let estudiante">
+                  <mat-chip-option 
+                    [selected]="false" 
+                    [color]="getActiveStatusColor(estudiante.activo)">
+                    {{ getActiveStatusText(estudiante.activo) }}
+                  </mat-chip-option>
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="estudiantesColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: estudiantesColumns;"></tr>
+            </table>
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- Teachers Tab -->
+      <mat-tab label="Profesores">
+        <div class="tab-content">
+          <div class="tab-header">
+            <h3>
+              <mat-icon>person</mat-icon>
+              Lista de Profesores ({{ details.profesores.length }})
+            </h3>
+          </div>
+
+          <div *ngIf="details.profesores.length === 0" class="empty-state">
+            <mat-icon>info</mat-icon>
+            <h4>No hay profesores</h4>
+            <p>Este curso-división no tiene profesores asignados.</p>
+          </div>
+
+          <div *ngIf="details.profesores.length > 0">
+            <table mat-table [dataSource]="details.profesores" class="full-width-table">
+              <ng-container matColumnDef="dni">
+                <th mat-header-cell *matHeaderCellDef>DNI</th>
+                <td mat-cell *matCellDef="let profesor">{{ profesor.dni }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="nombre">
+                <th mat-header-cell *matHeaderCellDef>Nombre</th>
+                <td mat-cell *matCellDef="let profesor">{{ profesor.nombre }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="apellido">
+                <th mat-header-cell *matHeaderCellDef>Apellido</th>
+                <td mat-cell *matCellDef="let profesor">{{ profesor.apellido }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="email">
+                <th mat-header-cell *matHeaderCellDef>Email</th>
+                <td mat-cell *matCellDef="let profesor">{{ profesor.email }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="materia_nombre">
+                <th mat-header-cell *matHeaderCellDef>Materia</th>
+                <td mat-cell *matCellDef="let profesor">
+                  <mat-chip-option [selected]="false" color="accent">
+                    {{ profesor.materia_nombre }}
+                  </mat-chip-option>
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="profesoresColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: profesoresColumns;"></tr>
+            </table>
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- Attendance Tab -->
+      <mat-tab label="Asistencia">
+        <div class="tab-content">
+          <div class="tab-header">
+            <h3>
+              <mat-icon>access_time</mat-icon>
+              Registros de Asistencia ({{ details.registros_asistencia.length }})
+            </h3>
+            
+            <!-- Date Filters -->
+            <div class="date-filters">
+              <mat-form-field appearance="outline">
+                <mat-label>Fecha Desde</mat-label>
+                <input matInput [matDatepicker]="pickerDesde" [(ngModel)]="fechaDesde">
+                <mat-hint>Desde</mat-hint>
+                <mat-datepicker-toggle matIconSuffix [for]="pickerDesde"></mat-datepicker-toggle>
+                <mat-datepicker #pickerDesde></mat-datepicker>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Fecha Hasta</mat-label>
+                <input matInput [matDatepicker]="pickerHasta" [(ngModel)]="fechaHasta">
+                <mat-hint>Hasta</mat-hint>
+                <mat-datepicker-toggle matIconSuffix [for]="pickerHasta"></mat-datepicker-toggle>
+                <mat-datepicker #pickerHasta></mat-datepicker>
+              </mat-form-field>
+
+              <button mat-raised-button color="primary" (click)="filterAttendance()">
+                <mat-icon>filter_list</mat-icon>
+                Filtrar
+              </button>
+
+              <button mat-button (click)="clearAttendanceFilter()">
+                <mat-icon>clear</mat-icon>
+                Limpiar
+              </button>
+            </div>
+          </div>
+
+          <div *ngIf="details.registros_asistencia.length === 0" class="empty-state">
+            <mat-icon>info</mat-icon>
+            <h4>No hay registros</h4>
+            <p>No se encontraron registros de asistencia para el período seleccionado.</p>
+          </div>
+
+          <div *ngIf="details.registros_asistencia.length > 0">
+            <table mat-table [dataSource]="details.registros_asistencia" class="full-width-table">
+              <ng-container matColumnDef="fecha">
+                <th mat-header-cell *matHeaderCellDef>Fecha</th>
+                <td mat-cell *matCellDef="let registro">{{ formatDate(registro.fecha) }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="hora">
+                <th mat-header-cell *matHeaderCellDef>Hora</th>
+                <td mat-cell *matCellDef="let registro">{{ formatTime(registro.hora) }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="nombre">
+                <th mat-header-cell *matHeaderCellDef>Estudiante</th>
+                <td mat-cell *matCellDef="let registro">{{ registro.nombre }} {{ registro.apellido }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="dni">
+                <th mat-header-cell *matHeaderCellDef>DNI</th>
+                <td mat-cell *matCellDef="let registro">{{ registro.dni }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="tipo">
+                <th mat-header-cell *matHeaderCellDef>Tipo</th>
+                <td mat-cell *matCellDef="let registro">
+                  <mat-chip-option 
+                    [selected]="false" 
+                    [color]="getTypeColor(registro.tipo)">
+                    {{ registro.tipo | titlecase }}
+                  </mat-chip-option>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="dispositivo">
+                <th mat-header-cell *matHeaderCellDef>Dispositivo</th>
+                <td mat-cell *matCellDef="let registro">{{ registro.dispositivo_nombre || 'N/A' }}</td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="asistenciaColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: asistenciaColumns;"></tr>
+            </table>
+          </div>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+</div>

@@ -1,19 +1,27 @@
-
 services:
   # Servicio: Base de Datos MariaDB
   db:
     image: mariadb:10.5
     container_name: db
     ports:
-      - "3306:3306"
+      - "3307:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: biometrico
+      MYSQL_USER: biofirma
+      MYSQL_PASSWORD: biofirma
     volumes:
       - ./db/data:/var/lib/mysql
+      - ./backend/db-init:/docker-entrypoint-initdb.d
     restart: unless-stopped
+    command:
+      [
+        "mysqld",
+        "--character-set-server=utf8mb4",
+        "--collation-server=utf8mb4_unicode_ci",
+        "--skip-host-cache",
+        "--skip-name-resolve",
+      ]
 
   # Servicio: Adminer (gestión de base de datos)
   adminer:
@@ -22,6 +30,8 @@ services:
     ports:
       - "8080:8080"
     restart: unless-stopped
+    depends_on:
+      - db
 
   # Servicio: Backend (Node.js)
   backend:
@@ -30,26 +40,34 @@ services:
     container_name: backend
     ports:
       - "3001:3001"
-    volumes:
-      - ./backend:/app
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=biofirma
+      - DB_PASSWORD=biofirma
+      - DB_NAME=biometrico
+      - PORT=3001
+      - JWT_SECRET=SuperSecretJWTKey123
+    # Removed volume mounts for production build
     depends_on:
       - db
     restart: unless-stopped
 
-  # Servicio: Node-RED
-  nodered:
-    image: nodered/node-red
-    container_name: nodered
-    ports:
-      - "1880:1880"
-    volumes:
-      - ./nodered:/data
-      - ./nodered/certs:/certs
-    restart: unless-stopped
+  # # Servicio: Node-RED (temporarily disabled due to file system issues)
+  # nodered:
+  #   image: nodered/node-red:latest
+  #   container_name: nodered
+  #   ports:
+  #     - "1880:1880"
+  #   volumes:
+  #     - ./nodered/data:/data
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - db
 
-  # Servicio: Mosquitto
+  # Servicio: Mosquitto MQTT Broker
   mosquitto:
-    image: eclipse-mosquitto
+    image: eclipse-mosquitto:latest
     container_name: mosquitto
     ports:
       - "1883:1883"
@@ -59,14 +77,31 @@ services:
       - ./mosquitto/data:/mosquitto/data
       - ./mosquitto/log:/mosquitto/log
     restart: unless-stopped
+    depends_on:
+      - db
 
-  # Servicio: Caddy (Proxy Reverso)
+  # Servicio: Frontend (Angular)
+  frontend:
+    build:
+      context: ./frontend
+    container_name: frontend
+    ports:
+      - "4200:80"
+    restart: unless-stopped
+    depends_on:
+      - backend
+
+  # Servicio: Caddy (Reverse Proxy)
   caddy:
-    image: caddy:latest
+    image: caddy:2
     container_name: caddy
     ports:
+      - "80:80"
       - "443:443"
     volumes:
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile
-      - ./caddy/certificados:/certificados
+    depends_on:
+      - backend
+      - frontend
+      - adminer
     restart: unless-stopped
