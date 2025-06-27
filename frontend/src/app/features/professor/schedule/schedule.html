@@ -1,0 +1,265 @@
+<div class="professor-schedule-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">
+        <mat-icon>schedule</mat-icon>
+        Mi Horario
+      </h1>
+      <div class="header-actions">
+        <button mat-button (click)="goToToday()">
+          <mat-icon>today</mat-icon>
+          Hoy
+        </button>
+        <button mat-raised-button color="primary" (click)="refreshSchedule()">
+          <mat-icon>refresh</mat-icon>
+          Actualizar
+        </button>
+        <button mat-raised-button color="accent" (click)="exportSchedule()">
+          <mat-icon>download</mat-icon>
+          Exportar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <mat-spinner></mat-spinner>
+    <p>Cargando horario...</p>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!isLoading" class="main-content">
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-icon primary">
+            <mat-icon>schedule</mat-icon>
+          </div>
+          <div class="stat-info">
+            <h3>{{ stats.totalHoursWeek | number:'1.1-1' }}h</h3>
+            <p>Horas Semanales</p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-icon success">
+            <mat-icon>event</mat-icon>
+          </div>
+          <div class="stat-info">
+            <h3>{{ stats.classesToday }}</h3>
+            <p>Clases Hoy</p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-icon accent">
+            <mat-icon>class</mat-icon>
+          </div>
+          <div class="stat-info">
+            <h3>{{ stats.totalClasses }}</h3>
+            <p>Clases Totales</p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-icon warn">
+            <mat-icon>access_time</mat-icon>
+          </div>
+          <div class="stat-info">
+            <h3>{{ stats.avgDailyHours | number:'1.1-1' }}h</h3>
+            <p>Promedio Diario</p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Navigation and Filters -->
+    <mat-card class="navigation-card">
+      <mat-card-content>
+        <div class="navigation-controls">
+          <div class="week-navigation">
+            <button mat-icon-button (click)="navigateWeek('prev')">
+              <mat-icon>chevron_left</mat-icon>
+            </button>
+            <h3>Semana del {{ filtersForm.value.selectedWeek | date:'dd/MM/yyyy' }}</h3>
+            <button mat-icon-button (click)="navigateWeek('next')">
+              <mat-icon>chevron_right</mat-icon>
+            </button>
+          </div>
+          
+          <form [formGroup]="filtersForm" class="filters-form">
+            <mat-form-field appearance="outline">
+              <mat-label>Vista</mat-label>
+              <mat-select formControlName="viewType">
+                <mat-option value="week">Vista Semanal</mat-option>
+                <mat-option value="day">Vista Diaria</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </form>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Tabs for Different Views -->
+    <mat-tab-group [(selectedIndex)]="selectedTabIndex" class="schedule-tabs">
+      <!-- Weekly View Tab -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon>view_week</mat-icon>
+          <span>Vista Semanal</span>
+        </ng-template>
+
+        <div class="tab-content">
+          <mat-card class="schedule-card">
+            <mat-card-content>
+              <div class="weekly-schedule">
+                <!-- Time Header -->
+                <div class="time-header">
+                  <div class="day-header"></div>
+                  <div *ngFor="let day of daysOfWeek" class="day-header">
+                    <div class="day-name">{{ day.short }}</div>
+                    <div class="day-date">
+                      {{ getDateForDay(day.number) | date:'dd/MM' }}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Schedule Grid -->
+                <div class="schedule-grid">
+                  <div *ngFor="let time of timeSlots" class="time-row">
+                    <div class="time-slot" [class.current-time]="isCurrentTime(time)">
+                      {{ time }}
+                    </div>
+                    <div *ngFor="let day of daysOfWeek" class="class-slot">
+                      <div *ngIf="getClassAtTime(day.number, time)" 
+                           class="class-item"
+                           [style.background-color]="getSubjectColor(getClassAtTime(day.number, time)!.subject)"
+                           matTooltip="{{ getClassAtTime(day.number, time)!.subject }} - {{ getClassAtTime(day.number, time)!.class }}">
+                        <div class="class-subject">{{ getClassAtTime(day.number, time)!.subject }}</div>
+                        <div class="class-details">{{ getClassAtTime(day.number, time)!.class }}</div>
+                        <div class="class-room">{{ getClassAtTime(day.number, time)!.room }}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </mat-tab>
+
+      <!-- Daily View Tab -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon>today</mat-icon>
+          <span>Vista Diaria</span>
+        </ng-template>
+
+        <div class="tab-content">
+          <mat-card class="daily-schedule-card">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>today</mat-icon>
+                Clases de Hoy
+              </mat-card-title>
+              <mat-card-subtitle>
+                {{ currentDate | date:'EEEE, dd MMMM yyyy':'es' }}
+              </mat-card-subtitle>
+            </mat-card-header>
+
+            <mat-card-content>
+              <div class="daily-classes" *ngIf="dailySchedule.length > 0; else noClassesToday">
+                <div *ngFor="let class of dailySchedule" class="daily-class-item">
+                  <div class="class-time">
+                    <div class="time-display">
+                      <mat-icon>schedule</mat-icon>
+                      {{ formatTimeRange(class.startTime, class.endTime) }}
+                    </div>
+                    <div class="duration">{{ class.duration }} min</div>
+                  </div>
+
+                  <div class="class-content">
+                    <div class="class-header">
+                      <h3 [style.color]="getSubjectColor(class.subject)">
+                        {{ class.subject }}
+                      </h3>
+                      <mat-chip-set>
+                        <mat-chip [highlighted]="true">{{ class.class }}</mat-chip>
+                      </mat-chip-set>
+                    </div>
+
+                    <div class="class-info">
+                      <div class="info-item">
+                        <mat-icon>room</mat-icon>
+                        <span>{{ class.room }}</span>
+                      </div>
+                      <div class="info-item">
+                        <mat-icon>access_time</mat-icon>
+                        <span>{{ class.duration }} minutos</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="class-actions">
+                    <button mat-icon-button color="primary" matTooltip="Tomar Asistencia">
+                      <mat-icon>how_to_reg</mat-icon>
+                    </button>
+                    <button mat-icon-button color="accent" matTooltip="Ver Calificaciones">
+                      <mat-icon>grade</mat-icon>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <ng-template #noClassesToday>
+                <div class="empty-state">
+                  <mat-icon>event_busy</mat-icon>
+                  <h3>No tienes clases hoy</h3>
+                  <p>Disfruta tu día libre</p>
+                </div>
+              </ng-template>
+            </mat-card-content>
+          </mat-card>
+
+          <!-- This Week Summary -->
+          <mat-card class="week-summary-card">
+            <mat-card-header>
+              <mat-card-title>Resumen de la Semana</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="week-days">
+                <div *ngFor="let day of weeklySchedule" class="week-day">
+                  <div class="day-header">
+                    <h4>{{ day.dayName }}</h4>
+                    <span class="day-date">{{ day.date | date:'dd/MM' }}</span>
+                  </div>
+                  <div class="day-classes" *ngIf="day.classes.length > 0; else noDayClasses">
+                    <div *ngFor="let class of day.classes" class="mini-class">
+                      <div class="mini-time">{{ class.startTime }}</div>
+                      <div class="mini-subject" [style.background-color]="getSubjectColor(class.subject)">
+                        {{ class.subject }}
+                      </div>
+                      <div class="mini-class-name">{{ class.class }}</div>
+                    </div>
+                  </div>
+                  <ng-template #noDayClasses>
+                    <div class="no-classes">Sin clases</div>
+                  </ng-template>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+</div>

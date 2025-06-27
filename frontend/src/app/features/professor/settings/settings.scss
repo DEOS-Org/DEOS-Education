@@ -1,0 +1,457 @@
+// Professor Settings Component Styles
+
+// Variables
+$primary-color: #4f46e5;
+$secondary-color: #7c3aed;
+$success-color: #10b981;
+$warning-color: #f59e0b;
+$error-color: #ef4444;
+$accent-color: #06b6d4;
+$text-primary: #1f2937;
+$text-secondary: #6b7280;
+$border-color: #e5e7eb;
+$background-color: #f9fafb;
+
+.professor-settings-container {
+  padding: 24px;
+  background-color: $background-color;
+  min-height: calc(100vh - 64px);
+
+  // Page Header
+  .page-header {
+    margin-bottom: 24px;
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .page-title {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 600;
+      color: $text-primary;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      mat-icon {
+        font-size: 32px;
+        color: $primary-color;
+      }
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+    }
+  }
+
+  // Loading State
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+    p {
+      margin-top: 16px;
+      color: $text-secondary;
+      font-size: 16px;
+    }
+  }
+
+  // Main Content
+  .main-content {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  // Settings Tabs
+  .settings-tabs {
+    ::ng-deep .mat-tab-header {
+      border-bottom: 1px solid $border-color;
+    }
+
+    ::ng-deep .mat-tab-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+    }
+
+    .tab-content {
+      padding-top: 24px;
+    }
+  }
+
+  // Common Card Styles
+  .profile-card,
+  .notifications-card,
+  .classroom-card,
+  .security-card {
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 24px;
+
+    mat-card-header {
+      padding-bottom: 16px;
+      border-bottom: 1px solid $border-color;
+
+      mat-card-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 20px;
+        font-weight: 600;
+        color: $text-primary;
+
+        mat-icon {
+          font-size: 24px;
+          color: $primary-color;
+        }
+      }
+
+      mat-card-subtitle {
+        color: $text-secondary;
+        font-size: 14px;
+        margin-top: 8px;
+      }
+    }
+  }
+
+  // Form Styles
+  .profile-form,
+  .notifications-form,
+  .classroom-form,
+  .security-form {
+    .form-section {
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid $border-color;
+
+      &:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+      }
+
+      h4 {
+        margin: 0 0 20px 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: $text-primary;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+    }
+
+    .form-row {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+
+      mat-form-field {
+        flex: 1;
+        min-width: 200px;
+      }
+    }
+
+    .full-width {
+      width: 100%;
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid $border-color;
+    }
+  }
+
+  // Notification Toggles
+  .notification-toggle,
+  .setting-toggle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background: $background-color;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .toggle-info {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex: 1;
+
+      mat-icon {
+        font-size: 24px;
+        color: $primary-color;
+        background: rgba($primary-color, 0.1);
+        padding: 8px;
+        border-radius: 8px;
+      }
+
+      .toggle-text {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        .toggle-title {
+          font-weight: 500;
+          color: $text-primary;
+          font-size: 16px;
+        }
+
+        .toggle-description {
+          color: $text-secondary;
+          font-size: 14px;
+          line-height: 1.4;
+        }
+      }
+    }
+
+    mat-slide-toggle {
+      margin-left: 16px;
+    }
+  }
+
+  .form-toggles {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  // Security Information
+  .security-info {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid $border-color;
+
+    h4 {
+      margin: 0 0 20px 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: $text-primary;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+
+      .info-item {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px;
+        background: $background-color;
+        border-radius: 8px;
+
+        mat-icon {
+          font-size: 24px;
+          color: $primary-color;
+          background: rgba($primary-color, 0.1);
+          padding: 12px;
+          border-radius: 8px;
+        }
+
+        .info-content {
+          h5 {
+            margin: 0 0 4px 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: $text-primary;
+          }
+
+          p {
+            margin: 0;
+            font-size: 14px;
+            color: $text-secondary;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Animations
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsive Design
+@media (max-width: 1024px) {
+  .professor-settings-container {
+    .form-row {
+      flex-direction: column;
+
+      mat-form-field {
+        width: 100%;
+        min-width: unset;
+      }
+    }
+
+    .info-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .professor-settings-container {
+    padding: 16px;
+
+    .page-header {
+      padding: 16px;
+
+      .header-content {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .page-title {
+        font-size: 24px;
+      }
+
+      .header-actions {
+        justify-content: center;
+      }
+    }
+
+    .notification-toggle,
+    .setting-toggle {
+      padding: 12px;
+
+      .toggle-info {
+        gap: 12px;
+
+        mat-icon {
+          padding: 6px;
+          font-size: 20px;
+        }
+
+        .toggle-text {
+          .toggle-title {
+            font-size: 14px;
+          }
+
+          .toggle-description {
+            font-size: 12px;
+          }
+        }
+      }
+    }
+
+    .form-actions {
+      flex-direction: column;
+
+      button {
+        width: 100%;
+      }
+    }
+
+    .info-item {
+      padding: 12px;
+
+      mat-icon {
+        padding: 8px;
+        font-size: 20px;
+      }
+    }
+  }
+}
+
+// Print Styles
+@media print {
+  .professor-settings-container {
+    background: white;
+
+    .page-header .header-actions,
+    .form-actions {
+      display: none;
+    }
+
+    .settings-tabs ::ng-deep .mat-tab-header {
+      display: none;
+    }
+  }
+}
+
+// Custom Material Overrides
+::ng-deep {
+  .mat-form-field-appearance-outline .mat-form-field-outline {
+    color: $border-color;
+  }
+
+  .mat-slide-toggle {
+    .mat-slide-toggle-bar {
+      background-color: rgba($border-color, 0.5);
+    }
+
+    &.mat-checked .mat-slide-toggle-bar {
+      background-color: rgba($primary-color, 0.5);
+    }
+
+    .mat-slide-toggle-thumb {
+      background-color: white;
+    }
+
+    &.mat-checked .mat-slide-toggle-thumb {
+      background-color: $primary-color;
+    }
+  }
+
+  .mat-tab-group {
+    .mat-tab-header {
+      .mat-tab-label-container {
+        .mat-tab-label {
+          &.mat-tab-label-active {
+            color: $primary-color;
+          }
+        }
+      }
+      
+      .mat-ink-bar {
+        background-color: $primary-color;
+      }
+    }
+  }
+
+  .mat-form-field {
+    .mat-form-field-hint {
+      color: $text-secondary;
+      font-size: 12px;
+    }
+  }
+}

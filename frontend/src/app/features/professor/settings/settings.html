@@ -1,0 +1,489 @@
+<div class="professor-settings-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">
+        <mat-icon>settings</mat-icon>
+        Configuración
+      </h1>
+      <div class="header-actions">
+        <button mat-button (click)="importSettings()">
+          <mat-icon>upload</mat-icon>
+          Importar
+        </button>
+        <button mat-button (click)="exportSettings()">
+          <mat-icon>download</mat-icon>
+          Exportar
+        </button>
+        <button mat-raised-button color="primary" (click)="resetToDefaults()">
+          <mat-icon>restore</mat-icon>
+          Restaurar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <mat-spinner></mat-spinner>
+    <p>Cargando configuración...</p>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!isLoading" class="main-content">
+    <!-- Settings Tabs -->
+    <mat-tab-group [(selectedIndex)]="selectedTabIndex" class="settings-tabs">
+      <!-- Profile Tab -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon>person</mat-icon>
+          <span>Perfil</span>
+        </ng-template>
+
+        <div class="tab-content">
+          <mat-card class="profile-card">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>person</mat-icon>
+                Información Personal
+              </mat-card-title>
+              <mat-card-subtitle>
+                Actualiza tu información personal y de contacto
+              </mat-card-subtitle>
+            </mat-card-header>
+
+            <mat-card-content>
+              <form [formGroup]="profileForm" class="profile-form">
+                <div class="form-section">
+                  <h4>Datos Básicos</h4>
+                  <div class="form-row">
+                    <mat-form-field appearance="outline">
+                      <mat-label>Nombre</mat-label>
+                      <input matInput formControlName="firstName" placeholder="Juan">
+                      <mat-error *ngIf="profileForm.get('firstName')?.hasError('required')">
+                        El nombre es requerido
+                      </mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                      <mat-label>Apellido</mat-label>
+                      <input matInput formControlName="lastName" placeholder="Pérez">
+                      <mat-error *ngIf="profileForm.get('lastName')?.hasError('required')">
+                        El apellido es requerido
+                      </mat-error>
+                    </mat-form-field>
+                  </div>
+
+                  <div class="form-row">
+                    <mat-form-field appearance="outline">
+                      <mat-label>Email</mat-label>
+                      <input matInput type="email" formControlName="email" placeholder="juan.perez@escuela.edu">
+                      <mat-error *ngIf="profileForm.get('email')?.hasError('required')">
+                        El email es requerido
+                      </mat-error>
+                      <mat-error *ngIf="profileForm.get('email')?.hasError('email')">
+                        Ingresa un email válido
+                      </mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                      <mat-label>Teléfono</mat-label>
+                      <input matInput formControlName="phone" placeholder="+54 11 1234-5678">
+                    </mat-form-field>
+                  </div>
+                </div>
+
+                <div class="form-section">
+                  <h4>Información Profesional</h4>
+                  <div class="form-row">
+                    <mat-form-field appearance="outline">
+                      <mat-label>Especialización</mat-label>
+                      <mat-select formControlName="specialization">
+                        <mat-option *ngFor="let spec of specializations" [value]="spec">
+                          {{ spec }}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                      <mat-label>Horarios de Consulta</mat-label>
+                      <input matInput formControlName="officeHours" placeholder="Lunes a Viernes: 14:00 - 16:00">
+                    </mat-form-field>
+                  </div>
+
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Biografía</mat-label>
+                    <textarea matInput 
+                              rows="4" 
+                              formControlName="bio" 
+                              placeholder="Describe tu experiencia profesional..."></textarea>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Preferencia de Contacto</mat-label>
+                    <mat-select formControlName="contactPreference">
+                      <mat-option *ngFor="let pref of contactPreferences" [value]="pref.value">
+                        {{ pref.label }}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+
+                <div class="form-actions">
+                  <button mat-raised-button color="primary" (click)="saveProfile()">
+                    <mat-icon>save</mat-icon>
+                    Guardar Cambios
+                  </button>
+                </div>
+              </form>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </mat-tab>
+
+      <!-- Notifications Tab -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon>notifications</mat-icon>
+          <span>Notificaciones</span>
+        </ng-template>
+
+        <div class="tab-content">
+          <mat-card class="notifications-card">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>notifications</mat-icon>
+                Configuración de Notificaciones
+              </mat-card-title>
+              <mat-card-subtitle>
+                Configura cómo y cuándo quieres recibir notificaciones
+              </mat-card-subtitle>
+            </mat-card-header>
+
+            <mat-card-content>
+              <form [formGroup]="notificationForm" class="notifications-form">
+                <div class="form-section">
+                  <h4>Canales de Notificación</h4>
+                  <div class="notification-toggle">
+                    <div class="toggle-info">
+                      <mat-icon>email</mat-icon>
+                      <div class="toggle-text">
+                        <span class="toggle-title">Notificaciones por Email</span>
+                        <span class="toggle-description">Recibe notificaciones en tu correo electrónico</span>
+                      </div>
+                    </div>
+                    <mat-slide-toggle formControlName="emailNotifications"></mat-slide-toggle>
+                  </div>
+
+                  <div class="notification-toggle">
+                    <div class="toggle-info">
+                      <mat-icon>sms</mat-icon>
+                      <div class="toggle-text">
+                        <span class="toggle-title">Notificaciones por SMS</span>
+                        <span class="toggle-description">Recibe notificaciones importantes por mensaje de texto</span>
+                      </div>
+                    </div>
+                    <mat-slide-toggle formControlName="smsNotifications"></mat-slide-toggle>
+                  </div>
+                </div>
+
+                <div class="form-section">
+                  <h4>Tipos de Notificación</h4>
+                  <div class="notification-toggle">
+                    <div class="toggle-info">
+                      <mat-icon>how_to_reg</mat-icon>
+                      <div class="toggle-text">
+                        <span class="toggle-title">Alertas de Asistencia</span>
+                        <span class="toggle-description">Notificaciones sobre ausencias frecuentes de estudiantes</span>
+                      </div>
+                    </div>
+                    <mat-slide-toggle formControlName="attendanceAlerts"></mat-slide-toggle>
+                  </div>
+
+                  <div class="notification-toggle">
+                    <div class="toggle-info">
+                      <mat-icon>grade</mat-icon>
+                      <div class="toggle-text">
+                        <span class="toggle-title">Alertas de Calificaciones</span>
+                        <span class="toggle-description">Notificaciones sobre calificaciones pendientes o bajas</span>
+                      </div>
+                    </div>
+                    <mat-slide-toggle formControlName="gradeAlerts"></mat-slide-toggle>
+                  </div>
+
+                  <div class="notification-toggle">
+                    <div class="toggle-info">
+                      <mat-icon>trending_down</mat-icon>
+                      <div class="toggle-text">
+                        <span class="toggle-title">Alertas de Bajo Rendimiento</span>
+                        <span class="toggle-description">Notificaciones sobre estudiantes con rendimiento académico bajo</span>
+                      </div>
+                    </div>
+                    <mat-slide-toggle formControlName="lowPerformanceAlerts"></mat-slide-toggle>
+                  </div>
+
+                  <div class="notification-toggle">
+                    <div class="toggle-info">
+                      <mat-icon>event</mat-icon>
+                      <div class="toggle-text">
+                        <span class="toggle-title">Recordatorios de Reuniones</span>
+                        <span class="toggle-description">Recordatorios de reuniones programadas con padres</span>
+                      </div>
+                    </div>
+                    <mat-slide-toggle formControlName="parentMeetingReminders"></mat-slide-toggle>
+                  </div>
+                </div>
+
+                <div class="form-actions">
+                  <button mat-raised-button color="primary" (click)="saveNotifications()">
+                    <mat-icon>save</mat-icon>
+                    Guardar Configuración
+                  </button>
+                </div>
+              </form>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </mat-tab>
+
+      <!-- Classroom Tab -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon>class</mat-icon>
+          <span>Aula</span>
+        </ng-template>
+
+        <div class="tab-content">
+          <mat-card class="classroom-card">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>class</mat-icon>
+                Configuración del Aula
+              </mat-card-title>
+              <mat-card-subtitle>
+                Personaliza el comportamiento y apariencia de tu aula virtual
+              </mat-card-subtitle>
+            </mat-card-header>
+
+            <mat-card-content>
+              <form [formGroup]="classroomForm" class="classroom-form">
+                <div class="form-section">
+                  <h4>Configuración General</h4>
+                  <div class="form-row">
+                    <mat-form-field appearance="outline">
+                      <mat-label>Idioma por Defecto</mat-label>
+                      <mat-select formControlName="defaultLanguage">
+                        <mat-option *ngFor="let lang of languages" [value]="lang.value">
+                          {{ lang.label }}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                      <mat-label>Zona Horaria</mat-label>
+                      <mat-select formControlName="timezone">
+                        <mat-option *ngFor="let tz of timezones" [value]="tz.value">
+                          {{ tz.label }}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                </div>
+
+                <div class="form-section">
+                  <h4>Sistema de Calificaciones</h4>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Escala de Calificación</mat-label>
+                    <mat-select formControlName="gradeScale">
+                      <mat-option *ngFor="let scale of gradeScales" [value]="scale.value">
+                        {{ scale.label }}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+
+                <div class="form-section">
+                  <h4>Configuración de Asistencia</h4>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Período de Gracia (minutos)</mat-label>
+                    <input matInput 
+                           type="number" 
+                           formControlName="attendanceGracePeriod" 
+                           placeholder="10">
+                    <mat-hint>Tiempo adicional antes de marcar como tarde</mat-hint>
+                    <mat-error *ngIf="classroomForm.get('attendanceGracePeriod')?.hasError('min')">
+                      El valor mínimo es 0
+                    </mat-error>
+                    <mat-error *ngIf="classroomForm.get('attendanceGracePeriod')?.hasError('max')">
+                      El valor máximo es 60
+                    </mat-error>
+                  </mat-form-field>
+                </div>
+
+                <div class="form-section">
+                  <h4>Configuración Avanzada</h4>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Intervalo de Autoguardado (segundos)</mat-label>
+                    <input matInput 
+                           type="number" 
+                           formControlName="autoSaveInterval" 
+                           placeholder="30">
+                    <mat-hint>Frecuencia de guardado automático</mat-hint>
+                    <mat-error *ngIf="classroomForm.get('autoSaveInterval')?.hasError('min')">
+                      El valor mínimo es 10
+                    </mat-error>
+                    <mat-error *ngIf="classroomForm.get('autoSaveInterval')?.hasError('max')">
+                      El valor máximo es 300
+                    </mat-error>
+                  </mat-form-field>
+
+                  <div class="form-toggles">
+                    <div class="setting-toggle">
+                      <div class="toggle-info">
+                        <mat-icon>photo</mat-icon>
+                        <div class="toggle-text">
+                          <span class="toggle-title">Mostrar Fotos de Estudiantes</span>
+                          <span class="toggle-description">Muestra las fotos de perfil en las listas de estudiantes</span>
+                        </div>
+                      </div>
+                      <mat-slide-toggle formControlName="showStudentPhotos"></mat-slide-toggle>
+                    </div>
+
+                    <div class="setting-toggle">
+                      <div class="toggle-info">
+                        <mat-icon>flash_on</mat-icon>
+                        <div class="toggle-text">
+                          <span class="toggle-title">Habilitar Acciones Rápidas</span>
+                          <span class="toggle-description">Permite acciones rápidas con atajos de teclado</span>
+                        </div>
+                      </div>
+                      <mat-slide-toggle formControlName="enableQuickActions"></mat-slide-toggle>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-actions">
+                  <button mat-button (click)="resetToDefaults()">
+                    <mat-icon>restore</mat-icon>
+                    Restaurar por Defecto
+                  </button>
+                  <button mat-raised-button color="primary" (click)="saveClassroom()">
+                    <mat-icon>save</mat-icon>
+                    Guardar Configuración
+                  </button>
+                </div>
+              </form>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </mat-tab>
+
+      <!-- Security Tab -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon>security</mat-icon>
+          <span>Seguridad</span>
+        </ng-template>
+
+        <div class="tab-content">
+          <mat-card class="security-card">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>security</mat-icon>
+                Configuración de Seguridad
+              </mat-card-title>
+              <mat-card-subtitle>
+                Gestiona tu contraseña y configuración de seguridad
+              </mat-card-subtitle>
+            </mat-card-header>
+
+            <mat-card-content>
+              <form [formGroup]="passwordForm" class="security-form">
+                <div class="form-section">
+                  <h4>Cambiar Contraseña</h4>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Contraseña Actual</mat-label>
+                    <input matInput 
+                           type="password" 
+                           formControlName="currentPassword" 
+                           placeholder="Ingresa tu contraseña actual">
+                    <mat-error *ngIf="passwordForm.get('currentPassword')?.hasError('required')">
+                      La contraseña actual es requerida
+                    </mat-error>
+                  </mat-form-field>
+
+                  <div class="form-row">
+                    <mat-form-field appearance="outline">
+                      <mat-label>Nueva Contraseña</mat-label>
+                      <input matInput 
+                             type="password" 
+                             formControlName="newPassword" 
+                             placeholder="Mínimo 8 caracteres">
+                      <mat-error *ngIf="passwordForm.get('newPassword')?.hasError('required')">
+                        La nueva contraseña es requerida
+                      </mat-error>
+                      <mat-error *ngIf="passwordForm.get('newPassword')?.hasError('minlength')">
+                        La contraseña debe tener al menos 8 caracteres
+                      </mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                      <mat-label>Confirmar Contraseña</mat-label>
+                      <input matInput 
+                             type="password" 
+                             formControlName="confirmPassword" 
+                             placeholder="Repite la nueva contraseña">
+                      <mat-error *ngIf="passwordForm.get('confirmPassword')?.hasError('required')">
+                        Confirma la nueva contraseña
+                      </mat-error>
+                      <mat-error *ngIf="getPasswordError()">
+                        {{ getPasswordError() }}
+                      </mat-error>
+                    </mat-form-field>
+                  </div>
+                </div>
+
+                <div class="form-actions">
+                  <button mat-raised-button color="primary" (click)="changePassword()">
+                    <mat-icon>lock</mat-icon>
+                    Cambiar Contraseña
+                  </button>
+                </div>
+              </form>
+
+              <!-- Security Information -->
+              <div class="security-info">
+                <h4>Información de Seguridad</h4>
+                <div class="info-grid">
+                  <div class="info-item">
+                    <mat-icon>verified_user</mat-icon>
+                    <div class="info-content">
+                      <h5>Último Acceso</h5>
+                      <p>{{ new Date() | date:'dd/MM/yyyy HH:mm' }}</p>
+                    </div>
+                  </div>
+                  
+                  <div class="info-item">
+                    <mat-icon>device_hub</mat-icon>
+                    <div class="info-content">
+                      <h5>Dispositivos Activos</h5>
+                      <p>3 dispositivos conectados</p>
+                    </div>
+                  </div>
+
+                  <div class="info-item">
+                    <mat-icon>update</mat-icon>
+                    <div class="info-content">
+                      <h5>Último Cambio de Contraseña</h5>
+                      <p>Hace 45 días</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+</div>

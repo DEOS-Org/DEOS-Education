@@ -1,0 +1,215 @@
+<div class="professor-dashboard">
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="loading()">
+    <mat-spinner></mat-spinner>
+    <p>Cargando información del dashboard...</p>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div class="dashboard-content" *ngIf="!loading()">
+    <!-- Header -->
+    <div class="dashboard-header">
+      <div class="header-content">
+        <h1>Portal Profesor</h1>
+        <p>Bienvenido/a al sistema de gestión académica</p>
+      </div>
+      <div class="header-actions">
+        <button mat-icon-button (click)="refreshDashboard()" matTooltip="Actualizar">
+          <mat-icon>refresh</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="summary-section" *ngIf="estadisticas()">
+      <div class="summary-cards">
+        <mat-card class="summary-card classes-card" (click)="goToClasses()">
+          <mat-card-content>
+            <div class="card-header">
+              <mat-icon>school</mat-icon>
+              <span class="card-title">Mis Clases</span>
+            </div>
+            <div class="card-value">
+              {{ estadisticas()?.totalClases || 0 }}
+            </div>
+            <div class="card-subtitle">Clases asignadas</div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="summary-card students-card" (click)="goToStudents()">
+          <mat-card-content>
+            <div class="card-header">
+              <mat-icon>people</mat-icon>
+              <span class="card-title">Estudiantes</span>
+            </div>
+            <div class="card-value">
+              {{ estadisticas()?.totalEstudiantes || 0 }}
+            </div>
+            <div class="card-subtitle">Total estudiantes</div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="summary-card grades-card" (click)="goToGrades()">
+          <mat-card-content>
+            <div class="card-header">
+              <mat-icon>grade</mat-icon>
+              <span class="card-title">Calificaciones</span>
+            </div>
+            <div class="card-value">
+              {{ estadisticas()?.totalCalificaciones || 0 }}
+            </div>
+            <div class="card-subtitle">Calificaciones registradas</div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="summary-card attendance-card" (click)="goToAttendance()">
+          <mat-card-content>
+            <div class="card-header">
+              <mat-icon>fact_check</mat-icon>
+              <span class="card-title">Asistencia</span>
+            </div>
+            <div class="card-value">
+              {{ estadisticas()?.porcentajeAsistencia || 0 }}%
+            </div>
+            <div class="card-subtitle">Promedio de asistencia</div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="content-grid">
+      <!-- Recent Classes -->
+      <mat-card class="content-card recent-classes-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>schedule</mat-icon>
+            Clases Recientes
+          </mat-card-title>
+          <mat-card-subtitle>Próximas clases programadas</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="classes-list">
+            <div class="class-item" *ngFor="let clase of clasesRecientes(); trackBy: trackByClaseId">
+              <div class="class-info">
+                <div class="class-subject">{{ clase.materia }}</div>
+                <div class="class-course">{{ clase.curso_division }}</div>
+                <div class="class-time">
+                  <mat-icon>access_time</mat-icon>
+                  {{ getScheduleTimeRange(clase) }}
+                </div>
+                <div class="class-location" *ngIf="clase.aula">
+                  <mat-icon>room</mat-icon>
+                  {{ clase.aula }}
+                </div>
+              </div>
+              <div class="class-day">
+                {{ clase.dia }}
+              </div>
+            </div>
+            <div class="empty-state" *ngIf="clasesRecientes().length === 0">
+              <mat-icon>school</mat-icon>
+              <p>No hay clases programadas</p>
+            </div>
+          </div>
+        </mat-card-content>
+        <mat-card-actions>
+          <button mat-button (click)="goToSchedule()">
+            <mat-icon>calendar_month</mat-icon>
+            Ver Horario Completo
+          </button>
+        </mat-card-actions>
+      </mat-card>
+
+      <!-- Recent Activity -->
+      <mat-card class="content-card recent-activity-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>history</mat-icon>
+            Actividad Reciente
+          </mat-card-title>
+          <mat-card-subtitle>Últimas acciones realizadas</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="activity-list">
+            <div class="activity-item" *ngFor="let activity of actividadReciente(); trackBy: trackByActivityId">
+              <div class="activity-icon">
+                <mat-icon [class]="'activity-' + activity.tipo">
+                  {{ getActivityIcon(activity.tipo) }}
+                </mat-icon>
+              </div>
+              <div class="activity-content">
+                <div class="activity-title">
+                  {{ activity.estudiante }}
+                </div>
+                <div class="activity-subject">
+                  {{ activity.materia }}
+                </div>
+                <div class="activity-detail">
+                  {{ activity.detalle }}
+                </div>
+              </div>
+              <div class="activity-time">
+                {{ formatActivityTime(activity.fecha) }}
+              </div>
+            </div>
+            <div class="empty-state" *ngIf="actividadReciente().length === 0">
+              <mat-icon>timeline</mat-icon>
+              <p>No hay actividad reciente</p>
+            </div>
+          </div>
+        </mat-card-content>
+        <mat-card-actions>
+          <button mat-button (click)="goToReports()">
+            <mat-icon>assessment</mat-icon>
+            Ver Reportes
+          </button>
+        </mat-card-actions>
+      </mat-card>
+
+      <!-- Quick Actions -->
+      <mat-card class="content-card quick-actions-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>flash_on</mat-icon>
+            Acciones Rápidas
+          </mat-card-title>
+          <mat-card-subtitle>Tareas comunes</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="quick-actions">
+            <button mat-stroked-button class="action-button" (click)="goToAttendance()">
+              <mat-icon>fact_check</mat-icon>
+              <span>Registrar Asistencia</span>
+            </button>
+            <button mat-stroked-button class="action-button" (click)="goToGrades()">
+              <mat-icon>grade</mat-icon>
+              <span>Agregar Calificación</span>
+            </button>
+            <button mat-stroked-button class="action-button" (click)="goToStudents()">
+              <mat-icon>people</mat-icon>
+              <span>Ver Estudiantes</span>
+            </button>
+            <button mat-stroked-button class="action-button" (click)="goToReports()">
+              <mat-icon>assessment</mat-icon>
+              <span>Generar Reporte</span>
+            </button>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-dashboard" *ngIf="!loading() && !dashboardData()">
+    <div class="empty-content">
+      <mat-icon>error_outline</mat-icon>
+      <h2>No se pudieron cargar los datos</h2>
+      <p>Verifica tu conexión e intenta nuevamente</p>
+      <button mat-raised-button color="primary" (click)="refreshDashboard()">
+        <mat-icon>refresh</mat-icon>
+        Reintentar
+      </button>
+    </div>
+  </div>
+</div>

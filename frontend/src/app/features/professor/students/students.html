@@ -1,0 +1,118 @@
+<div class="professor-students-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">
+        <mat-icon>people</mat-icon>
+        Mis Estudiantes
+      </h1>
+      <div class="header-actions">
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-label>Buscar estudiante</mat-label>
+          <input matInput [(ngModel)]="searchTerm" (input)="applyFilter()" placeholder="Nombre, apellido o DNI">
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+        <button mat-icon-button (click)="refreshStudents()" matTooltip="Actualizar">
+          <mat-icon>refresh</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="loading-container">
+    <mat-spinner></mat-spinner>
+    <p>Cargando estudiantes...</p>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!isLoading" class="main-content">
+    <!-- Students Table -->
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>
+          Lista de Estudiantes
+          <mat-chip class="student-count">{{ filteredStudents.length }} estudiantes</mat-chip>
+        </mat-card-title>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <table mat-table [dataSource]="filteredStudents" class="students-table">
+          <!-- Name Column -->
+          <ng-container matColumnDef="nombre">
+            <th mat-header-cell *matHeaderCellDef>Nombre</th>
+            <td mat-cell *matCellDef="let student">
+              {{ student.apellido }}, {{ student.nombre }}
+            </td>
+          </ng-container>
+
+          <!-- DNI Column -->
+          <ng-container matColumnDef="dni">
+            <th mat-header-cell *matHeaderCellDef>DNI</th>
+            <td mat-cell *matCellDef="let student">{{ student.numero_documento || student.dni }}</td>
+          </ng-container>
+
+          <!-- Email Column -->
+          <ng-container matColumnDef="email">
+            <th mat-header-cell *matHeaderCellDef>Email</th>
+            <td mat-cell *matCellDef="let student">{{ student.email }}</td>
+          </ng-container>
+
+          <!-- Classes Column -->
+          <ng-container matColumnDef="clases">
+            <th mat-header-cell *matHeaderCellDef>Clases</th>
+            <td mat-cell *matCellDef="let student">
+              <span *ngFor="let clase of student.clases" class="class-chip">
+                {{ clase }}
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- Average Column -->
+          <ng-container matColumnDef="promedio">
+            <th mat-header-cell *matHeaderCellDef>Promedio</th>
+            <td mat-cell *matCellDef="let student">
+              <span class="average" [class.good]="student.promedio >= 7" [class.warning]="student.promedio < 7 && student.promedio >= 4" [class.danger]="student.promedio < 4">
+                {{ student.promedio || 0 | number:'1.1-1' }}
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="acciones">
+            <th mat-header-cell *matHeaderCellDef>Acciones</th>
+            <td mat-cell *matCellDef="let student">
+              <button mat-icon-button [matMenuTriggerFor]="menu" matTooltip="Opciones">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #menu="matMenu">
+                <button mat-menu-item (click)="viewStudentDetails(student.id)">
+                  <mat-icon>visibility</mat-icon>
+                  <span>Ver detalles</span>
+                </button>
+                <button mat-menu-item (click)="viewStudentGrades(student.id)">
+                  <mat-icon>grade</mat-icon>
+                  <span>Ver calificaciones</span>
+                </button>
+                <button mat-menu-item (click)="viewStudentAttendance(student.id)">
+                  <mat-icon>event_available</mat-icon>
+                  <span>Ver asistencia</span>
+                </button>
+              </mat-menu>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+
+        <!-- Empty State -->
+        <div *ngIf="filteredStudents.length === 0" class="empty-state">
+          <mat-icon>person_off</mat-icon>
+          <h3>No se encontraron estudiantes</h3>
+          <p>{{ searchTerm ? 'Intenta con otros términos de búsqueda' : 'No tienes estudiantes asignados' }}</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

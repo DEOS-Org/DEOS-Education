@@ -1,0 +1,102 @@
+<div class="professor-classes">
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="loading()">
+    <mat-spinner></mat-spinner>
+    <p>Cargando clases...</p>
+  </div>
+
+  <!-- Classes Content -->
+  <div class="classes-content" *ngIf="!loading()">
+    <!-- Header -->
+    <div class="page-header">
+      <div class="header-content">
+        <h1>Mis Clases</h1>
+        <p>Gestiona tus clases asignadas y estudiantes</p>
+      </div>
+      <div class="header-actions">
+        <button mat-icon-button (click)="refreshClases()" matTooltip="Actualizar">
+          <mat-icon>refresh</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="summary-section">
+      <div class="summary-cards">
+        <mat-card class="summary-card">
+          <mat-card-content>
+            <div class="card-header">
+              <mat-icon>school</mat-icon>
+              <span class="card-title">Total Clases</span>
+            </div>
+            <div class="card-value">{{ totalClases() }}</div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="summary-card">
+          <mat-card-content>
+            <div class="card-header">
+              <mat-icon>people</mat-icon>
+              <span class="card-title">Total Estudiantes</span>
+            </div>
+            <div class="card-value">{{ totalEstudiantes() }}</div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+
+    <!-- Classes Grid -->
+    <div class="classes-grid">
+      <mat-card class="class-card" *ngFor="let clase of clases(); trackBy: trackByClaseId">
+        <mat-card-header>
+          <mat-card-title>{{ clase.materia }}</mat-card-title>
+          <mat-card-subtitle>{{ clase.curso_division }}</mat-card-subtitle>
+        </mat-card-header>
+        
+        <mat-card-content>
+          <div class="class-info">
+            <div class="info-item">
+              <mat-icon>schedule</mat-icon>
+              <span>{{ getDayName(clase.dia) }}</span>
+              <span>{{ getScheduleTimeRange(clase) }}</span>
+            </div>
+            
+            <div class="info-item" *ngIf="clase.aula">
+              <mat-icon>room</mat-icon>
+              <span>Aula {{ clase.aula }}</span>
+            </div>
+            
+            <div class="info-item">
+              <mat-icon>people</mat-icon>
+              <span>{{ clase.total_estudiantes || 0 }} estudiantes</span>
+            </div>
+          </div>
+        </mat-card-content>
+        
+        <mat-card-actions>
+          <button mat-button (click)="verEstudiantes(clase)">
+            <mat-icon>people</mat-icon>
+            Estudiantes
+          </button>
+          
+          <button mat-button (click)="verAsistencia(clase)">
+            <mat-icon>fact_check</mat-icon>
+            Asistencia
+          </button>
+          
+          <button mat-button (click)="verCalificaciones(clase)">
+            <mat-icon>grade</mat-icon>
+            Calificaciones
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="clases().length === 0">
+      <mat-icon>school</mat-icon>
+      <h2>No hay clases asignadas</h2>
+      <p>Contacta al administrador para que te asigne clases</p>
+    </div>
+  </div>
+</div>

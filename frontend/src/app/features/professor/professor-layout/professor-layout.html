@@ -1,0 +1,82 @@
+<mat-sidenav-container class="sidenav-container">
+  <mat-sidenav #drawer class="sidenav" mode="side" opened="true" 
+    [mode]="(isHandset$ | async) ? 'over' : 'side'"
+    [opened]="(isHandset$ | async) === false">
+    <div class="sidebar-header">
+      <div class="brand">
+        <mat-icon>school</mat-icon>
+        <h2>Portal Profesor</h2>
+      </div>
+    </div>
+    
+    <mat-nav-list>
+      <!-- Dashboard -->
+      <a mat-list-item routerLink="/professor/dashboard" routerLinkActive="active">
+        <mat-icon matListItemIcon>dashboard</mat-icon>
+        <span matListItemTitle>Dashboard</span>
+      </a>
+      
+      <!-- Mis Clases -->
+      <a mat-list-item routerLink="/professor/classes" routerLinkActive="active">
+        <mat-icon matListItemIcon>school</mat-icon>
+        <span matListItemTitle>Mis Clases</span>
+      </a>
+      
+      <!-- Asistencia -->
+      <a mat-list-item routerLink="/professor/attendance" routerLinkActive="active">
+        <mat-icon matListItemIcon>fact_check</mat-icon>
+        <span matListItemTitle>Asistencia</span>
+      </a>
+      
+      <!-- Calificaciones -->
+      <a mat-list-item routerLink="/professor/grades" routerLinkActive="active">
+        <mat-icon matListItemIcon>grade</mat-icon>
+        <span matListItemTitle>Calificaciones</span>
+      </a>
+      
+      <!-- Estudiantes -->
+      <a mat-list-item routerLink="/professor/students" routerLinkActive="active">
+        <mat-icon matListItemIcon>people</mat-icon>
+        <span matListItemTitle>Estudiantes</span>
+      </a>
+      
+      <!-- Horarios -->
+      <a mat-list-item routerLink="/professor/schedule" routerLinkActive="active">
+        <mat-icon matListItemIcon>schedule</mat-icon>
+        <span matListItemTitle>Horario</span>
+      </a>
+      
+      <!-- Reportes -->
+      <a mat-list-item routerLink="/professor/reports" routerLinkActive="active">
+        <mat-icon matListItemIcon>assessment</mat-icon>
+        <span matListItemTitle>Reportes</span>
+      </a>
+      
+      <!-- Configuración -->
+      <a mat-list-item routerLink="/professor/settings" routerLinkActive="active">
+        <mat-icon matListItemIcon>settings</mat-icon>
+        <span matListItemTitle>Configuración</span>
+      </a>
+      
+    </mat-nav-list>
+  </mat-sidenav>
+  
+  <mat-sidenav-content>
+    <mat-toolbar color="primary">
+      <button mat-icon-button (click)="drawer.toggle()" *ngIf="isHandset$ | async">
+        <mat-icon>menu</mat-icon>
+      </button>
+      <span>Portal Profesor</span>
+      <span class="spacer"></span>
+      <app-role-selector></app-role-selector>
+      <span class="user-info">{{ getUserFullName() }}</span>
+      <button mat-icon-button (click)="logout()">
+        <mat-icon>logout</mat-icon>
+      </button>
+    </mat-toolbar>
+    
+    <main class="main-content">
+      <router-outlet></router-outlet>
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

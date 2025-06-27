@@ -11,6 +11,8 @@ import logRoutes from './routes/logRoutes';
 import reportRoutes from './routes/reportRoutes';
 import dashboardRoutes from './routes/dashboardRoutes';
 import testRoutes from './routes/testRoutes';
+import { parentRoutes } from './routes/parentRoutes';
+import notificationRoutes from './routes/notificationRoutes';
 import { authenticate } from './middlewares/authMiddleware';
 import { errorHandler } from './middlewares/errorHandler';
 import { sequelize } from './models';
@@ -42,6 +44,8 @@ app.use('/api/horarios', authenticate, horarioRoutes);
 app.use('/api/logs', authenticate, logRoutes);
 app.use('/api/reports', authenticate, reportRoutes);
 app.use('/api/dashboard', authenticate, dashboardRoutes);
+app.use('/api/parent', authenticate, parentRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Middleware de manejo de errores
 app.use(errorHandler);
