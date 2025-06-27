@@ -1,0 +1,94 @@
+<div class="course-divisions-container">
+  <div class="page-header">
+    <div class="breadcrumb">
+      <a routerLink="/admin/professors" class="breadcrumb-link">
+        <mat-icon>group</mat-icon>
+        Profesores
+      </a>
+      <mat-icon class="breadcrumb-separator">arrow_forward_ios</mat-icon>
+      <span class="breadcrumb-current">{{ course?.nombre }} {{ course?.nivel }}</span>
+    </div>
+    <div class="header-actions">
+      <button mat-raised-button color="accent" (click)="refreshData()">
+        <mat-icon>refresh</mat-icon>
+        Actualizar
+      </button>
+    </div>
+  </div>
+
+  <div class="course-info-card" *ngIf="course">
+    <mat-card>
+      <mat-card-header>
+        <div mat-card-avatar class="course-avatar">
+          <mat-icon>school</mat-icon>
+        </div>
+        <mat-card-title>{{ course.nombre }}</mat-card-title>
+        <mat-card-subtitle>{{ course.nivel }} - {{ course.descripcion || 'Sin descripción' }}</mat-card-subtitle>
+      </mat-card-header>
+    </mat-card>
+  </div>
+
+  <div class="content-section">
+    <mat-card class="divisions-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>class</mat-icon>
+          Divisiones del Curso
+        </mat-card-title>
+        <mat-card-subtitle>
+          Selecciona una división para gestionar sus profesores y materias
+        </mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="loading-container" *ngIf="loading">
+          <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+          <p>Cargando divisiones...</p>
+        </div>
+        
+        <div class="divisions-grid" *ngIf="!loading">
+          <div *ngFor="let division of divisions" 
+               class="division-card"
+               [routerLink]="['/admin/professors/course', courseId, 'division', division.id]">
+            <div class="division-header">
+              <mat-icon class="division-icon">groups</mat-icon>
+              <div class="division-info">
+                <h3>División {{ division.nombre }}</h3>
+                <p>{{ course?.nombre }} {{ course?.nivel }}</p>
+              </div>
+            </div>
+            
+            <div class="division-stats">
+              <div class="stat-item">
+                <mat-icon>person</mat-icon>
+                <span>{{ getProfessorCount(division.id) }} profesores</span>
+              </div>
+              <div class="stat-item">
+                <mat-icon>book</mat-icon>
+                <span>{{ getSubjectCount(division.id) }} materias</span>
+              </div>
+              <div class="stat-item">
+                <mat-icon>school</mat-icon>
+                <span>Capacidad: {{ division.capacidad || 0 }}</span>
+              </div>
+            </div>
+            
+            <div class="division-actions">
+              <mat-chip-set>
+                <mat-chip [highlighted]="division.activo">
+                  {{ division.activo ? 'Activa' : 'Inactiva' }}
+                </mat-chip>
+              </mat-chip-set>
+              <mat-icon class="navigate-icon">arrow_forward_ios</mat-icon>
+            </div>
+          </div>
+        </div>
+
+        <div class="empty-state" *ngIf="!loading && divisions.length === 0">
+          <mat-icon>class_off</mat-icon>
+          <h3>No hay divisiones disponibles</h3>
+          <p>Crea divisiones desde la sección de Gestión Académica</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

@@ -1,0 +1,166 @@
+<div class="division-detail-container">
+  <div class="page-header">
+    <div class="breadcrumb">
+      <a routerLink="/admin/professors" class="breadcrumb-link">
+        <mat-icon>group</mat-icon>
+        Profesores
+      </a>
+      <mat-icon class="breadcrumb-separator">arrow_forward_ios</mat-icon>
+      <a [routerLink]="['/admin/professors/course', courseId]" class="breadcrumb-link">
+        {{ course?.nombre }} {{ course?.nivel }}
+      </a>
+      <mat-icon class="breadcrumb-separator">arrow_forward_ios</mat-icon>
+      <span class="breadcrumb-current">División {{ division?.nombre }}</span>
+    </div>
+    <div class="header-actions">
+      <button mat-raised-button color="primary" (click)="openAssignProfessorDialog()">
+        <mat-icon>person_add</mat-icon>
+        Asignar Profesor
+      </button>
+      <button mat-raised-button color="accent" (click)="refreshData()">
+        <mat-icon>refresh</mat-icon>
+        Actualizar
+      </button>
+    </div>
+  </div>
+
+  <div class="division-info-card" *ngIf="division && course">
+    <mat-card>
+      <mat-card-header>
+        <div mat-card-avatar class="division-avatar">
+          <mat-icon>groups</mat-icon>
+        </div>
+        <mat-card-title>División {{ division.nombre }}</mat-card-title>
+        <mat-card-subtitle>{{ course.nombre }} {{ course.nivel }} - Capacidad: {{ division.capacidad || 0 }} estudiantes</mat-card-subtitle>
+      </mat-card-header>
+    </mat-card>
+  </div>
+
+  <div class="content-tabs">
+    <mat-tab-group>
+      <mat-tab label="Profesores Asignados">
+        <div class="tab-content">
+          <div class="loading-container" *ngIf="loadingProfessors">
+            <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+            <p>Cargando profesores...</p>
+          </div>
+
+          <div class="professors-section" *ngIf="!loadingProfessors">
+            <div class="section-header">
+              <h3>
+                <mat-icon>person</mat-icon>
+                Profesores ({{ assignedProfessors.length }})
+              </h3>
+              <button mat-raised-button color="primary" (click)="openAssignProfessorDialog()">
+                <mat-icon>person_add</mat-icon>
+                Asignar Profesor
+              </button>
+            </div>
+
+            <div class="professors-grid" *ngIf="assignedProfessors.length > 0">
+              <div *ngFor="let professor of assignedProfessors" class="professor-card">
+                <div class="professor-header">
+                  <div class="professor-avatar">
+                    <mat-icon>person</mat-icon>
+                  </div>
+                  <div class="professor-info">
+                    <h4>{{ professor.nombre }} {{ professor.apellido }}</h4>
+                    <p>{{ professor.email }}</p>
+                    <p class="dni">DNI: {{ professor.dni }}</p>
+                  </div>
+                </div>
+
+                <div class="professor-subjects">
+                  <div class="subjects-header">
+                    <span>Materias Asignadas ({{ getProfessorSubjects(professor.id).length }})</span>
+                    <button mat-icon-button color="primary" (click)="openAssignSubjectDialog(professor)">
+                      <mat-icon>add</mat-icon>
+                    </button>
+                  </div>
+                  
+                  <div class="subjects-list" *ngIf="getProfessorSubjects(professor.id).length > 0">
+                    <mat-chip-set>
+                      <mat-chip *ngFor="let subject of getProfessorSubjects(professor.id)" 
+                               [removable]="true" 
+                               (removed)="removeSubjectFromProfessor(professor.id, subject.id)">
+                        {{ subject.nombre }}
+                        <mat-icon matChipRemove>cancel</mat-icon>
+                      </mat-chip>
+                    </mat-chip-set>
+                  </div>
+
+                  <div class="no-subjects" *ngIf="getProfessorSubjects(professor.id).length === 0">
+                    <span>Sin materias asignadas</span>
+                  </div>
+                </div>
+
+                <div class="professor-actions">
+                  <button mat-button color="warn" (click)="removeProfessorFromDivision(professor.id)">
+                    <mat-icon>person_remove</mat-icon>
+                    Remover
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="empty-state" *ngIf="assignedProfessors.length === 0">
+              <mat-icon>person_off</mat-icon>
+              <h3>No hay profesores asignados</h3>
+              <p>Asigna profesores a esta división para comenzar</p>
+            </div>
+          </div>
+        </div>
+      </mat-tab>
+
+      <mat-tab label="Materias Disponibles">
+        <div class="tab-content">
+          <div class="loading-container" *ngIf="loadingSubjects">
+            <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+            <p>Cargando materias...</p>
+          </div>
+
+          <div class="subjects-section" *ngIf="!loadingSubjects">
+            <div class="section-header">
+              <h3>
+                <mat-icon>book</mat-icon>
+                Materias del Curso ({{ availableSubjects.length }})
+              </h3>
+            </div>
+
+            <div class="subjects-grid" *ngIf="availableSubjects.length > 0">
+              <div *ngFor="let subject of availableSubjects" class="subject-card">
+                <div class="subject-header">
+                  <div class="subject-icon">
+                    <mat-icon>book</mat-icon>
+                  </div>
+                  <div class="subject-info">
+                    <h4>{{ subject.nombre }}</h4>
+                    <p>{{ subject.descripcion || 'Sin descripción' }}</p>
+                  </div>
+                </div>
+
+                <div class="subject-assignment">
+                  <div class="assigned-professor" *ngIf="getSubjectProfessor(subject.id)">
+                    <span>Asignada a: {{ getSubjectProfessor(subject.id)?.nombre }} {{ getSubjectProfessor(subject.id)?.apellido }}</span>
+                    <mat-chip color="accent" selected="true">Asignada</mat-chip>
+                  </div>
+                  
+                  <div class="unassigned-subject" *ngIf="!getSubjectProfessor(subject.id)">
+                    <span>Sin profesor asignado</span>
+                    <mat-chip>Sin asignar</mat-chip>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="empty-state" *ngIf="availableSubjects.length === 0">
+              <mat-icon>book_off</mat-icon>
+              <h3>No hay materias disponibles</h3>
+              <p>Configura las materias desde la sección de Gestión Académica</p>
+            </div>
+          </div>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+</div>

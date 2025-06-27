@@ -1,11 +1,12 @@
 {
 	admin off
-	auto_https off
+	# auto_https off  # Comentado para habilitar HTTPS en producción
 }
 
+# Development (HTTP)
 :80 {
 	handle /api/* {
-		reverse_proxy backend:3001
+		reverse_proxy backend:3000
 	}
 
 	handle /nodered/* {
@@ -16,7 +17,43 @@
 		reverse_proxy adminer:8080
 	}
 
+	handle {
+		reverse_proxy frontend:80
+	}
+
 	handle /mqtt/* {
 		reverse_proxy mosquitto:9001
 	}
 }
+
+# Production (HTTPS) - Descomenta para producción
+# deos-education.local {
+# 	handle /api/* {
+# 		reverse_proxy backend:3000
+# 	}
+#
+# 	handle /nodered/* {
+# 		reverse_proxy nodered:1880
+# 	}
+#
+# 	handle /adminer/* {
+# 		reverse_proxy adminer:8080
+# 	}
+#
+# 	handle {
+# 		reverse_proxy frontend:80
+# 	}
+#
+# 	handle /mqtt/* {
+# 		reverse_proxy mosquitto:9001
+# 	}
+#
+# 	# Configuración de seguridad
+# 	header {
+# 		X-Content-Type-Options nosniff
+# 		X-Frame-Options DENY
+# 		X-XSS-Protection "1; mode=block"
+# 		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+# 		Referrer-Policy "strict-origin-when-cross-origin"
+# 	}
+# }

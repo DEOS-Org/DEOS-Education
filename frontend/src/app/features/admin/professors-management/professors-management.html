@@ -1,0 +1,71 @@
+<div class="professors-management-container">
+  <div class="page-header">
+    <h1><mat-icon>group</mat-icon> Gestión de Profesores</h1>
+    <div class="header-actions">
+      <button mat-raised-button color="accent" (click)="refreshData()">
+        <mat-icon>refresh</mat-icon>
+        Actualizar
+      </button>
+    </div>
+  </div>
+
+  <div class="content-section">
+    <mat-card class="courses-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>school</mat-icon>
+          Cursos Disponibles
+        </mat-card-title>
+        <mat-card-subtitle>
+          Selecciona un curso para gestionar los profesores de sus divisiones
+        </mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="loading-container" *ngIf="loading">
+          <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+          <p>Cargando cursos...</p>
+        </div>
+        
+        <div class="courses-grid" *ngIf="!loading">
+          <div *ngFor="let course of courses" 
+               class="course-card"
+               [routerLink]="['/admin/professors/course', course.id]">
+            <div class="course-header">
+              <mat-icon class="course-icon">class</mat-icon>
+              <div class="course-info">
+                <h3>{{ course.nombre }}</h3>
+                <p>{{ course.nivel }}</p>
+              </div>
+            </div>
+            
+            <div class="course-stats">
+              <div class="stat-item">
+                <mat-icon>groups</mat-icon>
+                <span>{{ getDivisionCount(course.id) }} divisiones</span>
+              </div>
+              <div class="stat-item">
+                <mat-icon>person</mat-icon>
+                <span>{{ getProfessorCount(course.id) }} profesores</span>
+              </div>
+            </div>
+            
+            <div class="course-actions">
+              <mat-chip-set>
+                <mat-chip [highlighted]="course.activo">
+                  {{ course.activo ? 'Activo' : 'Inactivo' }}
+                </mat-chip>
+              </mat-chip-set>
+              <mat-icon class="navigate-icon">arrow_forward_ios</mat-icon>
+            </div>
+          </div>
+        </div>
+
+        <div class="empty-state" *ngIf="!loading && courses.length === 0">
+          <mat-icon>school_off</mat-icon>
+          <h3>No hay cursos disponibles</h3>
+          <p>Crea cursos desde la sección de Gestión Académica</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
