@@ -1,0 +1,694 @@
+.student-grades {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+// Header Section
+.grades-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.header-content h1 {
+  margin: 0 0 var(--space-1) 0;
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.header-content p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 16px;
+}
+
+.header-actions {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+// Loading State
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8) var(--space-4);
+  
+  p {
+    margin-top: var(--space-3);
+    color: var(--text-secondary);
+    font-size: 16px;
+  }
+}
+
+// Content Layout
+.grades-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+// Statistics Grid
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-3);
+}
+
+.stat-card {
+  cursor: default;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  }
+  
+  .mat-mdc-card-content {
+    padding: var(--space-3) !important;
+  }
+  
+  .stat-content {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+  
+  .mat-icon {
+    font-size: 32px;
+    width: 32px;
+    height: 32px;
+  }
+  
+  .stat-info {
+    flex: 1;
+  }
+  
+  .stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: var(--space-1);
+  }
+  
+  .stat-label {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+  
+  // Color variants
+  &.primary {
+    .mat-icon, .stat-value {
+      color: #2196f3;
+    }
+  }
+  
+  &.success {
+    .mat-icon, .stat-value {
+      color: var(--interactive-success);
+    }
+  }
+  
+  &.accent {
+    .mat-icon, .stat-value {
+      color: var(--interactive-accent);
+    }
+  }
+  
+  &.info {
+    .mat-icon, .stat-value {
+      color: var(--interactive-info);
+    }
+  }
+}
+
+// Charts Row
+.charts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.chart-card {
+  .mat-mdc-card-header {
+    .mat-mdc-card-title {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: 18px;
+      font-weight: 600;
+      color: #2196f3;
+    }
+  }
+}
+
+.chart-container {
+  height: 300px;
+  position: relative;
+}
+
+// Tabs
+.mat-mdc-tab-group {
+  .mat-mdc-tab-label {
+    font-weight: 500;
+  }
+}
+
+.tab-content {
+  padding: var(--space-4) 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+// Filter Card
+.filter-card {
+  .mat-mdc-card-content {
+    padding: var(--space-3) !important;
+  }
+}
+
+.filter-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-3);
+  align-items: end;
+  
+  button {
+    height: 40px;
+  }
+}
+
+// Subject Detail Card
+.subject-detail-card {
+  .mat-mdc-card-header {
+    .mat-mdc-card-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: #2196f3;
+    }
+    
+    .mat-mdc-card-subtitle {
+      font-size: 16px;
+      color: var(--text-secondary);
+      margin-top: var(--space-1);
+    }
+  }
+}
+
+.grades-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--space-4);
+}
+
+.grade-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-2);
+  padding: var(--space-4);
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.grade-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-3);
+}
+
+.grade-type {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-weight: 600;
+  color: var(--text-primary);
+  
+  .mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: #2196f3;
+  }
+}
+
+.grade-value {
+  font-size: 24px;
+  font-weight: 700;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-2);
+  text-align: center;
+  min-width: 60px;
+  
+  &.excellent {
+    color: var(--interactive-success);
+    background: rgba(76, 175, 80, 0.1);
+  }
+  
+  &.good {
+    color: #2196f3;
+    background: rgba(33, 150, 243, 0.1);
+  }
+  
+  &.satisfactory {
+    color: var(--interactive-warning);
+    background: rgba(255, 152, 0, 0.1);
+  }
+  
+  &.needs-improvement {
+    color: var(--interactive-error);
+    background: rgba(244, 67, 54, 0.1);
+  }
+}
+
+.grade-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.grade-evaluation {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 16px;
+}
+
+.grade-date {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.grade-notes {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-1);
+  font-size: 14px;
+  color: var(--text-secondary);
+  padding: var(--space-2);
+  background: rgba(33, 150, 243, 0.05);
+  border-radius: var(--radius-1);
+  
+  .mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: #2196f3;
+    margin-top: 2px;
+  }
+}
+
+// Table Card
+.table-card {
+  .mat-mdc-card-content {
+    padding: 0 !important;
+  }
+}
+
+.table-container {
+  overflow-x: auto;
+  border-radius: var(--radius-2);
+  border: 1px solid var(--border-light);
+}
+
+.grades-table {
+  width: 100%;
+  min-width: 700px;
+  
+  .mat-mdc-header-cell {
+    background: var(--bg-surface);
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 14px;
+    border-bottom: 2px solid var(--border-primary);
+    padding: var(--space-3) var(--space-2);
+  }
+  
+  .mat-mdc-cell {
+    padding: var(--space-3) var(--space-2);
+    border-bottom: 1px solid var(--border-light);
+    font-size: 14px;
+    
+    .mat-chip {
+      display: flex;
+      align-items: center;
+      gap: var(--space-1);
+      font-size: 12px !important;
+      height: 28px !important;
+      
+      .mat-icon {
+        font-size: 14px !important;
+        width: 14px !important;
+        height: 14px !important;
+      }
+    }
+    
+    .mat-icon {
+      color: var(--text-secondary);
+      font-size: 16px;
+      cursor: pointer;
+      
+      &:hover {
+        color: var(--text-primary);
+      }
+    }
+  }
+  
+  .mat-mdc-row {
+    &:hover {
+      background: var(--bg-elevated);
+    }
+    
+    &:last-child .mat-mdc-cell {
+      border-bottom: none;
+    }
+  }
+}
+
+.grade-display {
+  font-size: 18px;
+  font-weight: 700;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-1);
+  text-align: center;
+  min-width: 40px;
+  
+  &.excellent {
+    color: var(--interactive-success);
+    background: rgba(76, 175, 80, 0.1);
+  }
+  
+  &.good {
+    color: #2196f3;
+    background: rgba(33, 150, 243, 0.1);
+  }
+  
+  &.satisfactory {
+    color: var(--interactive-warning);
+    background: rgba(255, 152, 0, 0.1);
+  }
+  
+  &.needs-improvement {
+    color: var(--interactive-error);
+    background: rgba(244, 67, 54, 0.1);
+  }
+}
+
+// Analysis Card
+.analysis-card {
+  .mat-mdc-card-header {
+    .mat-mdc-card-title {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: 20px;
+      font-weight: 600;
+      color: #2196f3;
+    }
+  }
+}
+
+.analysis-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--space-4);
+}
+
+.performance-item {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-2);
+  padding: var(--space-4);
+}
+
+.performance-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  font-weight: 600;
+  color: var(--text-primary);
+  
+  .mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    color: #2196f3;
+  }
+}
+
+.performance-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.performance-entry {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-2);
+  background: var(--bg-surface);
+  border-radius: var(--radius-1);
+}
+
+.subject-name {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.subject-average {
+  font-weight: 700;
+  font-size: 16px;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-1);
+  
+  &.good {
+    color: var(--interactive-success);
+    background: rgba(76, 175, 80, 0.1);
+  }
+  
+  &.needs-improvement {
+    color: var(--interactive-error);
+    background: rgba(244, 67, 54, 0.1);
+  }
+}
+
+.trend-info {
+  text-align: center;
+}
+
+.trend-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+  font-weight: 600;
+  font-size: 16px;
+  
+  .mat-icon {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+  }
+  
+  &.positive {
+    color: var(--interactive-success);
+  }
+  
+  &.negative {
+    color: var(--interactive-error);
+  }
+}
+
+.trend-description {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+// No Data State
+.no-data {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+  color: var(--text-secondary);
+  
+  .mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: var(--space-2);
+    opacity: 0.5;
+  }
+  
+  p {
+    margin: 0;
+    font-size: 14px;
+  }
+}
+
+// Responsive Design
+@media (max-width: 1200px) {
+  .charts-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .chart-container {
+    height: 250px;
+  }
+  
+  .analysis-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .grades-header {
+    flex-direction: column;
+    gap: var(--space-3);
+    align-items: stretch;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .filter-row {
+    grid-template-columns: 1fr;
+    
+    button {
+      justify-self: stretch;
+    }
+  }
+  
+  .grades-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .table-container {
+    border-radius: 0;
+    margin: 0 calc(var(--space-4) * -1);
+    border-left: none;
+    border-right: none;
+  }
+  
+  .grades-table {
+    min-width: 600px;
+  }
+  
+  .analysis-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .chart-container {
+    height: 200px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-content h1 {
+    font-size: 24px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .stat-card .stat-content {
+    gap: var(--space-2);
+  }
+  
+  .stat-card .mat-icon {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+  }
+  
+  .stat-value {
+    font-size: 20px !important;
+  }
+  
+  .grade-header {
+    flex-direction: column;
+    gap: var(--space-2);
+    align-items: stretch;
+  }
+  
+  .grade-value {
+    font-size: 20px;
+    text-align: left;
+  }
+  
+  .grades-table {
+    min-width: 500px;
+    font-size: 12px;
+    
+    .mat-mdc-header-cell,
+    .mat-mdc-cell {
+      padding: var(--space-2) var(--space-1);
+    }
+    
+    .mat-chip {
+      font-size: 10px !important;
+      height: 24px !important;
+      
+      .mat-icon {
+        font-size: 12px !important;
+        width: 12px !important;
+        height: 12px !important;
+      }
+    }
+  }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .stat-card:hover,
+  .grade-card:hover {
+    box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1);
+  }
+  
+  .grade-card,
+  .performance-item {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .mat-mdc-header-cell {
+    background: rgba(255, 255, 255, 0.03) !important;
+  }
+  
+  .mat-mdc-row:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+  }
+  
+  .table-container {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .performance-entry {
+    background: rgba(255, 255, 255, 0.03);
+  }
+  
+  .grade-notes {
+    background: rgba(33, 150, 243, 0.1);
+  }
+}
