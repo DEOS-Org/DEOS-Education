@@ -1,0 +1,344 @@
+<div class="parent-grades">
+  <!-- Header -->
+  <div class="grades-header">
+    <div class="header-content">
+      <h1>Calificaciones</h1>
+      <p>Seguimiento detallado del rendimiento académico de tus hijos</p>
+    </div>
+    <div class="header-actions">
+      <button mat-icon-button (click)="refreshData()" matTooltip="Actualizar">
+        <mat-icon>refresh</mat-icon>
+      </button>
+      <button mat-stroked-button (click)="exportGrades()" color="primary">
+        <mat-icon>download</mat-icon>
+        Exportar
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <mat-spinner diameter="48"></mat-spinner>
+    <p>Cargando calificaciones...</p>
+  </div>
+
+  <!-- Grades Content -->
+  <div *ngIf="!isLoading" class="grades-content">
+    
+    <!-- Filter Controls -->
+    <mat-card class="filters-card">
+      <mat-card-content>
+        <div class="filters-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Seleccionar hijo</mat-label>
+            <mat-select [(value)]="selectedChildId" (selectionChange)="onChildSelected()">
+              <mat-option value="">Todos los hijos</mat-option>
+              <mat-option *ngFor="let child of children" [value]="child.alumno_id">
+                {{ child.alumno_nombre }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Materia</mat-label>
+            <mat-select [(value)]="selectedMateriaId" (selectionChange)="filterGrades()">
+              <mat-option value="">Todas las materias</mat-option>
+              <mat-option *ngFor="let materia of materias" [value]="materia.materia_id">
+                {{ materia.materia_nombre }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Trimestre</mat-label>
+            <mat-select [(value)]="selectedTrimestre" (selectionChange)="filterGrades()">
+              <mat-option value="">Todos los trimestres</mat-option>
+              <mat-option value="1">Primer Trimestre</mat-option>
+              <mat-option value="2">Segundo Trimestre</mat-option>
+              <mat-option value="3">Tercer Trimestre</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Período Lectivo</mat-label>
+            <mat-select [(value)]="selectedPeriodo" (selectionChange)="filterGrades()">
+              <mat-option *ngFor="let periodo of periodosLectivos" [value]="periodo">
+                {{ periodo }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <button mat-raised-button color="accent" (click)="clearFilters()">
+            <mat-icon>clear</mat-icon>
+            Limpiar
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Summary Cards -->
+    <div class="summary-grid" *ngIf="gradeSummary">
+      <mat-card class="summary-card">
+        <mat-card-content>
+          <div class="summary-content">
+            <mat-icon style="color: #7b1fa2">grade</mat-icon>
+            <div class="summary-info">
+              <div class="summary-value">{{ gradeSummary.promedio_general | number:'1.2-2' }}</div>
+              <div class="summary-label">Promedio General</div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="summary-card">
+        <mat-card-content>
+          <div class="summary-content">
+            <mat-icon style="color: #4caf50">school</mat-icon>
+            <div class="summary-info">
+              <div class="summary-value">{{ gradeSummary.materias_aprobadas }}</div>
+              <div class="summary-label">Materias Aprobadas</div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="summary-card">
+        <mat-card-content>
+          <div class="summary-content">
+            <mat-icon style="color: #ff9800">warning</mat-icon>
+            <div class="summary-info">
+              <div class="summary-value">{{ gradeSummary.materias_en_riesgo }}</div>
+              <div class="summary-label">Materias en Riesgo</div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="summary-card">
+        <mat-card-content>
+          <div class="summary-content">
+            <mat-icon style="color: #2196f3">assignment</mat-icon>
+            <div class="summary-info">
+              <div class="summary-value">{{ gradeSummary.total_evaluaciones }}</div>
+              <div class="summary-label">Total Evaluaciones</div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Performance Chart -->
+    <mat-card class="chart-card" *ngIf="selectedChildId">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>trending_up</mat-icon>
+          Evolución del Rendimiento - {{ getSelectedChildName() }}
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="chart-container">
+          <canvas id="performanceChart"></canvas>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Grades by Subject -->
+    <mat-card class="subjects-grades-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>subject</mat-icon>
+          Calificaciones por Materia
+        </mat-card-title>
+        <div class="header-actions">
+          <mat-chip-set>
+            <mat-chip *ngIf="selectedChildId" color="primary">
+              {{ getSelectedChildName() }}
+            </mat-chip>
+            <mat-chip *ngIf="filteredGrades.length > 0">
+              {{ filteredGrades.length }} calificaciones
+            </mat-chip>
+          </mat-chip-set>
+        </div>
+      </mat-card-header>
+      <mat-card-content>
+        <div *ngIf="groupedGrades && groupedGrades.length === 0" class="no-data">
+          <mat-icon>grade</mat-icon>
+          <p>No se encontraron calificaciones</p>
+        </div>
+
+        <mat-accordion *ngIf="groupedGrades && groupedGrades.length > 0">
+          <mat-expansion-panel *ngFor="let subject of groupedGrades" class="subject-panel">
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                <div class="subject-header">
+                  <span class="subject-name">{{ subject.materia_nombre }}</span>
+                  <span class="subject-average" [class]="getGradeClass(subject.promedio)">
+                    Promedio: {{ subject.promedio | number:'1.2-2' }}
+                  </span>
+                </div>
+              </mat-panel-title>
+              <mat-panel-description>
+                <span class="grades-count">{{ subject.calificaciones.length }} evaluaciones</span>
+                <mat-progress-bar 
+                  mode="determinate" 
+                  [value]="subject.promedio * 10"
+                  [color]="getProgressColor(subject.promedio)">
+                </mat-progress-bar>
+              </mat-panel-description>
+            </mat-expansion-panel-header>
+
+            <div class="subject-content">
+              <!-- Subject Statistics -->
+              <div class="subject-stats">
+                <div class="stat-item">
+                  <span class="stat-label">Profesor:</span>
+                  <span class="stat-value">{{ subject.profesor_nombre }}</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Nota más alta:</span>
+                  <span class="stat-value good">{{ subject.nota_maxima | number:'1.2-2' }}</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Nota más baja:</span>
+                  <span class="stat-value" [class]="getGradeClass(subject.nota_minima)">
+                    {{ subject.nota_minima | number:'1.2-2' }}
+                  </span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Tendencia:</span>
+                  <span class="stat-value" [class]="getTrendClass(subject.tendencia)">
+                    <mat-icon>{{ getTrendIcon(subject.tendencia) }}</mat-icon>
+                    {{ getTrendText(subject.tendencia) }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Grades List -->
+              <div class="grades-list">
+                <div *ngFor="let grade of subject.calificaciones" class="grade-item">
+                  <div class="grade-header">
+                    <div class="grade-title">{{ grade.titulo }}</div>
+                    <div class="grade-value" [class]="getGradeClass(grade.calificacion)">
+                      {{ grade.calificacion | number:'1.2-2' }}
+                    </div>
+                  </div>
+                  
+                  <div class="grade-details">
+                    <div class="grade-meta">
+                      <span class="grade-type">{{ grade.tipo_evaluacion_nombre }}</span>
+                      <span class="grade-date">{{ formatDate(grade.fecha_evaluacion) }}</span>
+                      <span class="grade-concept">{{ grade.calificacion_concepto }}</span>
+                    </div>
+                    
+                    <div class="grade-description" *ngIf="grade.descripcion">
+                      {{ grade.descripcion }}
+                    </div>
+                    
+                    <div class="grade-observations" *ngIf="grade.observaciones">
+                      <mat-icon>comment</mat-icon>
+                      <span>{{ grade.observaciones }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </mat-expansion-panel>
+        </mat-accordion>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Detailed Grades Table -->
+    <mat-card class="detailed-grades-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>list</mat-icon>
+          Vista Detallada de Calificaciones
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="table-container">
+          <table mat-table [dataSource]="filteredGrades" class="grades-table">
+            
+            <!-- Date Column -->
+            <ng-container matColumnDef="fecha">
+              <th mat-header-cell *matHeaderCellDef>Fecha</th>
+              <td mat-cell *matCellDef="let grade">
+                <div class="date-cell">
+                  <div class="date-value">{{ formatDate(grade.fecha_evaluacion) }}</div>
+                  <div class="trimester">T{{ grade.trimestre }}</div>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Student Column -->
+            <ng-container matColumnDef="estudiante" *ngIf="!selectedChildId">
+              <th mat-header-cell *matHeaderCellDef>Estudiante</th>
+              <td mat-cell *matCellDef="let grade">
+                <div class="student-cell">
+                  <mat-icon class="student-icon">face</mat-icon>
+                  <span class="student-name">{{ grade.alumno_nombre_completo }}</span>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Subject Column -->
+            <ng-container matColumnDef="materia">
+              <th mat-header-cell *matHeaderCellDef>Materia</th>
+              <td mat-cell *matCellDef="let grade">
+                <div class="subject-cell">
+                  <span class="subject-name">{{ grade.materia_nombre }}</span>
+                  <span class="subject-teacher">{{ grade.profesor_nombre_completo }}</span>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Evaluation Column -->
+            <ng-container matColumnDef="evaluacion">
+              <th mat-header-cell *matHeaderCellDef>Evaluación</th>
+              <td mat-cell *matCellDef="let grade">
+                <div class="evaluation-cell">
+                  <div class="evaluation-title">{{ grade.titulo }}</div>
+                  <mat-chip class="evaluation-type">{{ grade.tipo_evaluacion_nombre }}</mat-chip>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Grade Column -->
+            <ng-container matColumnDef="calificacion">
+              <th mat-header-cell *matHeaderCellDef>Calificación</th>
+              <td mat-cell *matCellDef="let grade">
+                <div class="grade-cell">
+                  <div class="grade-number" [class]="getGradeClass(grade.calificacion)">
+                    {{ grade.calificacion | number:'1.2-2' }}
+                  </div>
+                  <div class="grade-concept">{{ grade.calificacion_concepto }}</div>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Actions Column -->
+            <ng-container matColumnDef="acciones">
+              <th mat-header-cell *matHeaderCellDef>Acciones</th>
+              <td mat-cell *matCellDef="let grade">
+                <div class="actions-cell">
+                  <button mat-icon-button matTooltip="Ver detalles" (click)="viewGradeDetails(grade)">
+                    <mat-icon>visibility</mat-icon>
+                  </button>
+                </div>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+          </table>
+
+          <mat-paginator 
+            [pageSizeOptions]="[10, 20, 50]" 
+            showFirstLastButtons
+            aria-label="Seleccionar página de calificaciones">
+          </mat-paginator>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

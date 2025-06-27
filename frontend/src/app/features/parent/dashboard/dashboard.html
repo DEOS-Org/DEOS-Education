@@ -1,0 +1,412 @@
+<div class="parent-dashboard">
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="loading()">
+    <mat-spinner></mat-spinner>
+    <p>Cargando información del dashboard...</p>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div class="dashboard-content" *ngIf="!loading()">
+    <!-- Header -->
+    <div class="dashboard-header">
+      <div class="header-content">
+        <h1>Portal de Padre</h1>
+        <p>Bienvenido/a al sistema de gestión escolar</p>
+      </div>
+      <div class="header-actions">
+        <button mat-icon-button (click)="refreshDashboard()" matTooltip="Actualizar">
+          <mat-icon>refresh</mat-icon>
+        </button>
+        <button mat-icon-button [matMenuTriggerFor]="userMenu">
+          <mat-icon [matBadge]="urgentActivities().length" matBadgeColor="warn" 
+                   [matBadgeHidden]="urgentActivities().length === 0">notifications</mat-icon>
+        </button>
+        <mat-menu #userMenu="matMenu">
+          <button mat-menu-item *ngFor="let activity of urgentActivities()" 
+                  (click)="markActivityAsRead(activity)">
+            <mat-icon [color]="getActivityColor(activity.type, activity.priority)">
+              {{ getActivityIcon(activity.type) }}
+            </mat-icon>
+            <span>{{ activity.title }}</span>
+          </button>
+          <mat-divider *ngIf="urgentActivities().length > 0"></mat-divider>
+          <button mat-menu-item (click)="markAllActivitiesAsRead()" 
+                  [disabled]="urgentActivities().length === 0">
+            <mat-icon>done_all</mat-icon>
+            <span>Marcar todas como leídas</span>
+          </button>
+        </mat-menu>
+      </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="summary-section" *ngIf="summary()">
+      <div class="summary-cards">
+        <mat-card class="summary-card children-card" routerLink="/parent/children">
+          <mat-card-content>
+            <div class="card-header">
+              <mat-icon>family_restroom</mat-icon>
+              <span class="card-title">Mis Hijos</span>
+            </div>
+            <div class="card-value">{{ summary()!.totalChildren }}</div>
+            <div class="card-subtitle">estudiantes registrados</div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="summary-card events-card" routerLink="/parent/meetings">
+          <mat-card-content>
+            <div class="card-header">
+              <mat-icon>event</mat-icon>
+              <span class="card-title">Eventos</span>
+            </div>
+            <div class="card-value">{{ summary()!.upcomingEvents }}</div>
+            <div class="card-subtitle">próximos eventos</div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="summary-card messages-card" routerLink="/parent/communications">
+          <mat-card-content>
+            <div class="card-header">
+              <mat-icon [matBadge]="summary()!.unreadMessages" matBadgeColor="warn" 
+                       [matBadgeHidden]="summary()!.unreadMessages === 0">message</mat-icon>
+              <span class="card-title">Mensajes</span>
+            </div>
+            <div class="card-value">{{ summary()!.unreadMessages }}</div>
+            <div class="card-subtitle">mensajes sin leer</div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="summary-card payments-card" routerLink="/parent/payments" 
+                 [ngClass]="{ 'urgent': summary()!.overduePayments > 0 }">
+          <mat-card-content>
+            <div class="card-header">
+              <mat-icon [matBadge]="summary()!.overduePayments" matBadgeColor="warn" 
+                       [matBadgeHidden]="summary()!.overduePayments === 0">payment</mat-icon>
+              <span class="card-title">Pagos</span>
+            </div>
+            <div class="card-value">{{ formatCurrency(summary()!.totalDebt) }}</div>
+            <div class="card-subtitle" *ngIf="summary()!.overduePayments > 0; else normalPayments">
+              {{ summary()!.overduePayments }} pagos vencidos
+            </div>
+            <ng-template #normalPayments>
+              <div class="card-subtitle">{{ summary()!.pendingPayments }} pagos pendientes</div>
+            </ng-template>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+
+    <!-- Children Selection -->
+    <div class="children-section" *ngIf="children().length > 0">
+      <h2>Seleccionar Hijo</h2>
+      <div class="children-cards">
+        <mat-card class="child-card" 
+                 *ngFor="let child of children()" 
+                 [class.selected]="selectedChild()?.id === child.id"
+                 (click)="selectChild(child)">
+          <mat-card-content>
+            <div class="child-avatar">
+              <img *ngIf="child.photo" [src]="child.photo" [alt]="child.name">
+              <mat-icon *ngIf="!child.photo">person</mat-icon>
+            </div>
+            <div class="child-info">
+              <h3>{{ child.name }}</h3>
+              <p>{{ child.grade }} {{ child.division }}</p>
+            </div>
+            <div class="child-stats">
+              <div class="stat-item">
+                <span class="stat-label">Asistencia</span>
+                <div class="stat-value" [ngClass]="'color-' + getAttendanceColor(child.stats.attendance)">
+                  {{ child.stats.attendance }}%
+                </div>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Promedio</span>
+                <div class="stat-value" [ngClass]="'color-' + getGradeColor(child.stats.averageGrade)">
+                  {{ child.stats.averageGrade }}
+                </div>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Tareas</span>
+                <div class="stat-value" [ngClass]="'color-' + getTasksColor(child.stats.pendingTasks)">
+                  {{ child.stats.pendingTasks }}
+                </div>
+              </div>
+            </div>
+            <div class="next-exam" *ngIf="child.stats.nextExam">
+              <mat-icon>quiz</mat-icon>
+              <span>{{ child.stats.nextExam.subject }} - {{ formatDate(child.stats.nextExam.date) }}</span>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions-section">
+      <h2>Acciones Rápidas</h2>
+      <div class="quick-actions-grid">
+        <mat-card class="quick-action-card" 
+                 *ngFor="let action of quickActions()" 
+                 [routerLink]="action.route"
+                 [ngClass]="'action-' + action.color">
+          <mat-card-content>
+            <div class="action-icon">
+              <mat-icon [matBadge]="action.count" matBadgeColor="warn" 
+                       [matBadgeHidden]="!action.count">{{ action.icon }}</mat-icon>
+            </div>
+            <div class="action-content">
+              <h3>{{ action.label }}</h3>
+              <p>{{ action.description }}</p>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+
+    <!-- Dashboard Tabs -->
+    <div class="dashboard-tabs">
+      <mat-tab-group [(selectedIndex)]="selectedTab" (selectedIndexChange)="selectTab($event)">
+        <!-- Recent Activities Tab -->
+        <mat-tab label="Actividad Reciente">
+          <div class="tab-content">
+            <div class="activities-header">
+              <h3>Actividad Reciente</h3>
+              <button mat-button (click)="markAllActivitiesAsRead()" 
+                      [disabled]="getUnreadActivitiesCount() === 0">
+                <mat-icon>done_all</mat-icon>
+                Marcar todas como leídas
+              </button>
+            </div>
+            
+            <div class="activities-list">
+              <mat-card class="activity-card" 
+                       *ngFor="let activity of recentActivities()" 
+                       [ngClass]="{ 'unread': !activity.read, 'high-priority': activity.priority === 'high' }"
+                       (click)="markActivityAsRead(activity)">
+                <mat-card-content>
+                  <div class="activity-icon">
+                    <mat-icon [color]="getActivityColor(activity.type, activity.priority)">
+                      {{ getActivityIcon(activity.type) }}
+                    </mat-icon>
+                  </div>
+                  <div class="activity-content">
+                    <h4>{{ activity.title }}</h4>
+                    <p>{{ activity.description }}</p>
+                    <div class="activity-meta">
+                      <span class="child-name" *ngIf="activity.childName">{{ activity.childName }}</span>
+                      <span class="activity-date">{{ getRelativeTime(activity.date) }}</span>
+                    </div>
+                  </div>
+                  <div class="activity-actions">
+                    <mat-chip [ngClass]="'priority-' + activity.priority">
+                      {{ activity.priority === 'high' ? 'Urgente' : activity.priority === 'medium' ? 'Medio' : 'Bajo' }}
+                    </mat-chip>
+                    <mat-icon *ngIf="!activity.read" class="unread-indicator">fiber_manual_record</mat-icon>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state" *ngIf="recentActivities().length === 0">
+              <mat-icon>history</mat-icon>
+              <h3>No hay actividad reciente</h3>
+              <p>Las actividades aparecerán aquí cuando ocurran eventos importantes.</p>
+            </div>
+          </div>
+        </mat-tab>
+
+        <!-- Upcoming Events Tab -->
+        <mat-tab label="Próximos Eventos">
+          <div class="tab-content">
+            <div class="events-header">
+              <h3>Próximos Eventos</h3>
+              <div class="event-filters">
+                <mat-chip-listbox>
+                  <mat-chip-option (click)="selectTab(0)" 
+                                  [selected]="todayEvents().length > 0">
+                    Hoy ({{ todayEvents().length }})
+                  </mat-chip-option>
+                  <mat-chip-option (click)="selectTab(0)" 
+                                  [selected]="thisWeekEvents().length > 0">
+                    Esta Semana ({{ thisWeekEvents().length }})
+                  </mat-chip-option>
+                </mat-chip-listbox>
+              </div>
+            </div>
+
+            <!-- Today's Events -->
+            <div class="today-events" *ngIf="todayEvents().length > 0">
+              <h4>Eventos de Hoy</h4>
+              <div class="events-list urgent-events">
+                <mat-card class="event-card urgent" *ngFor="let event of todayEvents()">
+                  <mat-card-content>
+                    <div class="event-icon">
+                      <mat-icon [color]="getEventColor(event.type)">{{ getEventIcon(event.type) }}</mat-icon>
+                    </div>
+                    <div class="event-content">
+                      <h4>{{ event.title }}</h4>
+                      <p>{{ event.description }}</p>
+                      <div class="event-meta">
+                        <span class="event-time">{{ formatDateTime(event.date) }}</span>
+                        <span class="event-location" *ngIf="event.location">{{ event.location }}</span>
+                        <span class="event-child" *ngIf="event.childName">{{ event.childName }}</span>
+                      </div>
+                    </div>
+                    <div class="event-badge">
+                      <mat-chip color="warn">HOY</mat-chip>
+                    </div>
+                  </mat-card-content>
+                </mat-card>
+              </div>
+            </div>
+
+            <!-- All Upcoming Events -->
+            <div class="upcoming-events">
+              <h4 *ngIf="todayEvents().length > 0">Otros Eventos Próximos</h4>
+              <h4 *ngIf="todayEvents().length === 0">Próximos Eventos</h4>
+              
+              <div class="events-list">
+                <mat-card class="event-card" 
+                         *ngFor="let event of getFilteredUpcomingEvents()" 
+                         [ngClass]="{ 'urgent': event.urgent }">
+                  <mat-card-content>
+                    <div class="event-icon">
+                      <mat-icon [color]="getEventColor(event.type)">{{ getEventIcon(event.type) }}</mat-icon>
+                    </div>
+                    <div class="event-content">
+                      <h4>{{ event.title }}</h4>
+                      <p>{{ event.description }}</p>
+                      <div class="event-meta">
+                        <span class="event-date">{{ formatDateTime(event.date) }}</span>
+                        <span class="event-location" *ngIf="event.location">{{ event.location }}</span>
+                        <span class="event-child" *ngIf="event.childName">{{ event.childName }}</span>
+                      </div>
+                    </div>
+                    <div class="event-badge">
+                      <mat-chip *ngIf="isTomorrow(event.date)" color="accent">MAÑANA</mat-chip>
+                      <mat-chip *ngIf="!isToday(event.date) && !isTomorrow(event.date)" 
+                               [color]="getDaysUntil(event.date) <= 7 ? 'accent' : 'primary'">
+                        {{ getDaysUntil(event.date) === 1 ? 'Mañana' : 
+                           getDaysUntil(event.date) + ' días' }}
+                      </mat-chip>
+                      <mat-chip *ngIf="event.urgent" color="warn">URGENTE</mat-chip>
+                    </div>
+                  </mat-card-content>
+                </mat-card>
+              </div>
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state" *ngIf="upcomingEvents().length === 0">
+              <mat-icon>event</mat-icon>
+              <h3>No hay eventos próximos</h3>
+              <p>Los eventos programados aparecerán aquí.</p>
+            </div>
+          </div>
+        </mat-tab>
+
+        <!-- Child Summary Tab -->
+        <mat-tab label="Resumen por Hijo" [disabled]="!selectedChild()">
+          <div class="tab-content" *ngIf="selectedChild()">
+            <div class="child-summary-header">
+              <div class="child-info">
+                <div class="child-avatar">
+                  <img *ngIf="selectedChild()!.photo" [src]="selectedChild()!.photo" [alt]="selectedChild()!.name">
+                  <mat-icon *ngIf="!selectedChild()!.photo">person</mat-icon>
+                </div>
+                <div class="child-details">
+                  <h3>{{ selectedChild()!.name }}</h3>
+                  <p>{{ selectedChild()!.grade }} {{ selectedChild()!.division }}</p>
+                </div>
+              </div>
+              <button mat-raised-button color="primary" [routerLink]="['/parent/children']">
+                Ver Perfil Completo
+              </button>
+            </div>
+
+            <div class="child-stats-grid">
+              <mat-card class="stat-card attendance">
+                <mat-card-content>
+                  <div class="stat-header">
+                    <mat-icon>event_available</mat-icon>
+                    <h4>Asistencia</h4>
+                  </div>
+                  <div class="stat-value">{{ selectedChild()!.stats.attendance }}%</div>
+                  <mat-progress-bar [value]="selectedChild()!.stats.attendance" 
+                                   [color]="getAttendanceColor(selectedChild()!.stats.attendance)">
+                  </mat-progress-bar>
+                </mat-card-content>
+              </mat-card>
+
+              <mat-card class="stat-card grades">
+                <mat-card-content>
+                  <div class="stat-header">
+                    <mat-icon>grade</mat-icon>
+                    <h4>Promedio</h4>
+                  </div>
+                  <div class="stat-value">{{ selectedChild()!.stats.averageGrade }}</div>
+                  <mat-progress-bar [value]="selectedChild()!.stats.averageGrade * 10" 
+                                   [color]="getGradeColor(selectedChild()!.stats.averageGrade)">
+                  </mat-progress-bar>
+                </mat-card-content>
+              </mat-card>
+
+              <mat-card class="stat-card tasks">
+                <mat-card-content>
+                  <div class="stat-header">
+                    <mat-icon>assignment</mat-icon>
+                    <h4>Tareas Pendientes</h4>
+                  </div>
+                  <div class="stat-value">{{ selectedChild()!.stats.pendingTasks }}</div>
+                  <div class="stat-subtitle">
+                    {{ selectedChild()!.stats.pendingTasks === 0 ? 'Al día' : 'Pendientes' }}
+                  </div>
+                </mat-card-content>
+              </mat-card>
+
+              <mat-card class="stat-card exam" *ngIf="selectedChild()!.stats.nextExam">
+                <mat-card-content>
+                  <div class="stat-header">
+                    <mat-icon>quiz</mat-icon>
+                    <h4>Próximo Examen</h4>
+                  </div>
+                  <div class="exam-info">
+                    <div class="exam-subject">{{ selectedChild()!.stats.nextExam!.subject }}</div>
+                    <div class="exam-date">{{ formatDate(selectedChild()!.stats.nextExam!.date) }}</div>
+                    <div class="exam-countdown">
+                      Faltan {{ getDaysUntil(selectedChild()!.stats.nextExam!.date) }} días
+                    </div>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            </div>
+
+            <div class="quick-links">
+              <h4>Accesos Rápidos</h4>
+              <div class="quick-links-grid">
+                <button mat-stroked-button [routerLink]="['/parent/grades']">
+                  <mat-icon>grade</mat-icon>
+                  Ver Calificaciones
+                </button>
+                <button mat-stroked-button [routerLink]="['/parent/attendance']">
+                  <mat-icon>event_available</mat-icon>
+                  Ver Asistencia
+                </button>
+                <button mat-stroked-button [routerLink]="['/parent/assignments']">
+                  <mat-icon>assignment</mat-icon>
+                  Ver Tareas
+                </button>
+                <button mat-stroked-button [routerLink]="['/parent/meetings']">
+                  <mat-icon>event</mat-icon>
+                  Programar Reunión
+                </button>
+              </div>
+            </div>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,100 @@
+<mat-sidenav-container class="sidenav-container">
+  <mat-sidenav #drawer class="sidenav" mode="side" opened="true" 
+    [mode]="(isHandset$ | async) ? 'over' : 'side'"
+    [opened]="(isHandset$ | async) === false">
+    <div class="sidebar-header">
+      <div class="brand">
+        <mat-icon>family_restroom</mat-icon>
+        <h2>Portal de Padres</h2>
+      </div>
+    </div>
+    
+    <mat-nav-list>
+      <!-- Dashboard -->
+      <a mat-list-item routerLink="/parent/dashboard" routerLinkActive="active">
+        <mat-icon matListItemIcon>dashboard</mat-icon>
+        <span matListItemTitle>Dashboard</span>
+      </a>
+      
+      <!-- Mis Hijos -->
+      <a mat-list-item routerLink="/parent/children" routerLinkActive="active">
+        <mat-icon matListItemIcon>child_care</mat-icon>
+        <span matListItemTitle>Mis Hijos</span>
+      </a>
+      
+      <!-- Asistencia -->
+      <a mat-list-item routerLink="/parent/attendance" routerLinkActive="active">
+        <mat-icon matListItemIcon>how_to_reg</mat-icon>
+        <span matListItemTitle>Asistencia</span>
+      </a>
+      
+      <!-- Calificaciones -->
+      <a mat-list-item routerLink="/parent/grades" routerLinkActive="active">
+        <mat-icon matListItemIcon>grade</mat-icon>
+        <span matListItemTitle>Calificaciones</span>
+      </a>
+      
+      <!-- Tareas -->
+      <a mat-list-item routerLink="/parent/assignments" routerLinkActive="active">
+        <mat-icon matListItemIcon>assignment</mat-icon>
+        <span matListItemTitle>Tareas</span>
+      </a>
+      
+      <!-- Reuniones -->
+      <a mat-list-item routerLink="/parent/meetings" routerLinkActive="active">
+        <mat-icon matListItemIcon>event</mat-icon>
+        <span matListItemTitle>Reuniones</span>
+      </a>
+      
+      <!-- Comunicaciones -->
+      <a mat-list-item routerLink="/parent/communications" routerLinkActive="active">
+        <mat-icon matListItemIcon>mail</mat-icon>
+        <span matListItemTitle>Comunicaciones</span>
+      </a>
+      
+      <!-- Pagos -->
+      <a mat-list-item routerLink="/parent/payments" routerLinkActive="active">
+        <mat-icon matListItemIcon>payment</mat-icon>
+        <span matListItemTitle>Pagos</span>
+      </a>
+      
+      <!-- Comunicados -->
+      <a mat-list-item routerLink="/parent/comunicados" routerLinkActive="active">
+        <mat-icon matListItemIcon>campaign</mat-icon>
+        <span matListItemTitle>Comunicados</span>
+      </a>
+      
+      <!-- Mensajes -->
+      <a mat-list-item routerLink="/parent/mensajeria" routerLinkActive="active">
+        <mat-icon matListItemIcon>chat</mat-icon>
+        <span matListItemTitle>Mensajes</span>
+      </a>
+      
+      <!-- Configuración -->
+      <a mat-list-item routerLink="/parent/settings" routerLinkActive="active">
+        <mat-icon matListItemIcon>settings</mat-icon>
+        <span matListItemTitle>Configuración</span>
+      </a>
+      
+    </mat-nav-list>
+  </mat-sidenav>
+  
+  <mat-sidenav-content>
+    <mat-toolbar color="primary">
+      <button mat-icon-button (click)="drawer.toggle()" *ngIf="isHandset$ | async">
+        <mat-icon>menu</mat-icon>
+      </button>
+      <span>Portal de Padres</span>
+      <span class="spacer"></span>
+      <app-role-selector></app-role-selector>
+      <span class="user-info">{{ getUserFullName() }}</span>
+      <button mat-icon-button (click)="logout()">
+        <mat-icon>logout</mat-icon>
+      </button>
+    </mat-toolbar>
+    
+    <main class="main-content">
+      <router-outlet></router-outlet>
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

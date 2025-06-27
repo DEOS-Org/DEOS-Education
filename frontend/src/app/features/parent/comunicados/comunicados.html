@@ -1,0 +1,155 @@
+<div class="comunicados-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">
+        <mat-icon>campaign</mat-icon>
+        Comunicados Institucionales
+      </h1>
+    </div>
+  </div>
+
+  <!-- Filtros y Búsqueda -->
+  <mat-card class="filters-card">
+    <mat-card-content>
+      <div class="filters-container">
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Buscar</mat-label>
+          <input matInput [(ngModel)]="textoBusqueda" placeholder="Buscar por título o contenido..." (keyup.enter)="buscar()">
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Tipo</mat-label>
+          <mat-select [(ngModel)]="filtroTipo" (selectionChange)="aplicarFiltros()">
+            <mat-option value="">Todos</mat-option>
+            <mat-option *ngFor="let tipo of tiposComunicado" [value]="tipo.value">
+              {{ tipo.label }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <div class="filter-actions">
+          <button mat-button (click)="buscar()">
+            <mat-icon>search</mat-icon>
+            Buscar
+          </button>
+          <button mat-button (click)="limpiarFiltros()">
+            <mat-icon>clear</mat-icon>
+            Limpiar
+          </button>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Tabla de Comunicados -->
+  <mat-card class="table-card">
+    <mat-card-content>
+      <div class="table-container">
+        <table mat-table [dataSource]="comunicados" class="comunicados-table">
+          <!-- Columna Título -->
+          <ng-container matColumnDef="titulo">
+            <th mat-header-cell *matHeaderCellDef>Comunicado</th>
+            <td mat-cell *matCellDef="let comunicado">
+              <div class="titulo-cell">
+                <div class="titulo-wrapper">
+                  <strong [class.no-leido]="!comunicado.leido">{{ comunicado.titulo }}</strong>
+                  <mat-icon *ngIf="!comunicado.leido" class="unread-indicator" matTooltip="No leído">
+                    fiber_new
+                  </mat-icon>
+                </div>
+                <p class="comunicado-content">{{ comunicado.contenido }}</p>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Columna Tipo -->
+          <ng-container matColumnDef="tipo">
+            <th mat-header-cell *matHeaderCellDef>Tipo</th>
+            <td mat-cell *matCellDef="let comunicado">
+              <mat-chip-set>
+                <mat-chip [class]="getTipoChip(comunicado.tipo).class">
+                  <mat-icon>{{ getTipoChip(comunicado.tipo).icon }}</mat-icon>
+                  {{ comunicado.tipo | titlecase }}
+                </mat-chip>
+              </mat-chip-set>
+            </td>
+          </ng-container>
+
+          <!-- Columna Dirigido A -->
+          <ng-container matColumnDef="dirigido_a">
+            <th mat-header-cell *matHeaderCellDef>Dirigido A</th>
+            <td mat-cell *matCellDef="let comunicado">
+              {{ comunicado.dirigido_a | titlecase }}
+            </td>
+          </ng-container>
+
+          <!-- Columna Fecha Publicación -->
+          <ng-container matColumnDef="fecha_publicacion">
+            <th mat-header-cell *matHeaderCellDef>Fecha</th>
+            <td mat-cell *matCellDef="let comunicado">
+              <span *ngIf="comunicado.fecha_publicacion">
+                {{ formatearFecha(comunicado.fecha_publicacion) }}
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- Columna Creador -->
+          <ng-container matColumnDef="creador">
+            <th mat-header-cell *matHeaderCellDef>Enviado por</th>
+            <td mat-cell *matCellDef="let comunicado">
+              <div class="creator-info">
+                <mat-icon class="creator-icon">person</mat-icon>
+                <span>{{ getCreatorName(comunicado) }}</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Columna Prioridad -->
+          <ng-container matColumnDef="prioridad">
+            <th mat-header-cell *matHeaderCellDef>Prioridad</th>
+            <td mat-cell *matCellDef="let comunicado">
+              <mat-chip-set>
+                <mat-chip [class]="getPrioridadChip(comunicado.prioridad).class">
+                  <mat-icon>{{ getPrioridadChip(comunicado.prioridad).icon }}</mat-icon>
+                  {{ comunicado.prioridad | titlecase }}
+                </mat-chip>
+              </mat-chip-set>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row 
+              *matRowDef="let row; columns: displayedColumns;" 
+              class="clickable-row"
+              (click)="verDetalleComunicado(row)"></tr>
+        </table>
+
+        <!-- Estado de carga -->
+        <div *ngIf="isLoading" class="loading-container">
+          <mat-spinner></mat-spinner>
+          <p>Cargando comunicados...</p>
+        </div>
+
+        <!-- Estado vacío -->
+        <div *ngIf="!isLoading && comunicados.length === 0" class="empty-state">
+          <mat-icon>campaign</mat-icon>
+          <h3>No hay comunicados</h3>
+          <p>No hay comunicados disponibles en este momento</p>
+        </div>
+      </div>
+
+      <!-- Paginación -->
+      <mat-paginator 
+        *ngIf="totalComunicados > 0"
+        [length]="totalComunicados"
+        [pageSize]="pageSize"
+        [pageIndex]="currentPage"
+        [pageSizeOptions]="[5, 10, 20]"
+        (page)="onPageChange($event)"
+        showFirstLastButtons>
+      </mat-paginator>
+    </mat-card-content>
+  </mat-card>
+</div>

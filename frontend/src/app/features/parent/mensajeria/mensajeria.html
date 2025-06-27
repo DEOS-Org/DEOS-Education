@@ -1,0 +1,198 @@
+<div class="parent-mensajeria">
+  <!-- Header -->
+  <div class="mensajeria-header">
+    <div class="header-content">
+      <h1>
+        <mat-icon>message</mat-icon>
+        Mensajería
+      </h1>
+      <p>Comunicación directa con profesores y directivos</p>
+    </div>
+    <div class="header-actions">
+      <button mat-raised-button color="primary" (click)="openCompose()">
+        <mat-icon>add</mat-icon>
+        Nuevo Mensaje
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading()" class="loading-container">
+    <mat-spinner diameter="48"></mat-spinner>
+    <p>Cargando mensajes...</p>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!loading()" class="mensajeria-content">
+    
+    <!-- Compose Dialog -->
+    <mat-card *ngIf="showCompose()" class="compose-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>create</mat-icon>
+          Nuevo Mensaje
+        </mat-card-title>
+        <button mat-icon-button (click)="closeCompose()" matTooltip="Cerrar">
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="composeForm" (ngSubmit)="sendMessage()">
+          <div class="compose-form">
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Destinatario</mat-label>
+                <mat-select formControlName="recipientId" required>
+                  <mat-optgroup *ngFor="let child of children()" [label]="'Profesores de ' + child.name">
+                    <mat-option *ngFor="let teacher of getTeachersByChild(child.id)" [value]="teacher.id">
+                      {{ teacher.name }} - {{ teacher.subject }}
+                    </mat-option>
+                  </mat-optgroup>
+                  <mat-optgroup label="Directivos">
+                    <mat-option *ngFor="let teacher of teachers().filter(t => t.subject === 'Dirección')" [value]="teacher.id">
+                      {{ teacher.name }}
+                    </mat-option>
+                  </mat-optgroup>
+                </mat-select>
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Relacionado con</mat-label>
+                <mat-select formControlName="childId">
+                  <mat-option value="">General</mat-option>
+                  <mat-option *ngFor="let child of children()" [value]="child.id">
+                    {{ child.name }} - {{ child.grade }} {{ child.division }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Categoría</mat-label>
+                <mat-select formControlName="category">
+                  <mat-option value="general">General</mat-option>
+                  <mat-option value="academic">Académico</mat-option>
+                  <mat-option value="discipline">Disciplina</mat-option>
+                  <mat-option value="meeting">Reunión</mat-option>
+                  <mat-option value="emergency">Urgente</mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Prioridad</mat-label>
+                <mat-select formControlName="priority">
+                  <mat-option value="low">Baja</mat-option>
+                  <mat-option value="medium">Media</mat-option>
+                  <mat-option value="high">Alta</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Asunto</mat-label>
+                <input matInput formControlName="subject" required>
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Mensaje</mat-label>
+                <textarea matInput formControlName="content" rows="6" required placeholder="Escriba su mensaje aquí..."></textarea>
+              </mat-form-field>
+            </div>
+
+            <div class="form-actions">
+              <button mat-button type="button" (click)="closeCompose()">Cancelar</button>
+              <button mat-raised-button color="primary" type="submit" [disabled]="!composeForm.valid">
+                <mat-icon>send</mat-icon>
+                Enviar
+              </button>
+            </div>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Simple Message List for now -->
+    <mat-card class="messages-card">
+      <mat-card-header>
+        <mat-card-title>
+          Mensajes
+          <mat-chip *ngIf="filteredMessages().length > 0">
+            {{ filteredMessages().length }}
+          </mat-chip>
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div *ngIf="filteredMessages().length === 0" class="no-messages">
+          <mat-icon>inbox</mat-icon>
+          <h3>No hay mensajes</h3>
+          <p>No se encontraron mensajes</p>
+        </div>
+
+        <mat-list *ngIf="filteredMessages().length > 0">
+          <mat-list-item 
+            *ngFor="let message of filteredMessages()" 
+            class="message-item"
+            [class.unread]="!message.isRead"
+            (click)="selectMessage(message)">
+            
+            <div matListItemAvatar class="message-avatar">
+              <mat-icon>{{ getCategoryIcon(message.category) }}</mat-icon>
+            </div>
+
+            <div matListItemTitle class="message-title">
+              <div class="title-row">
+                <span class="sender">{{ message.sender.name }}</span>
+                <span class="date">{{ formatDate(message.timestamp) }}</span>
+              </div>
+              <div class="subject-row">
+                <span class="subject">{{ message.subject }}</span>
+              </div>
+            </div>
+
+            <div matListItemLine class="message-preview">
+              <span class="child-tag" *ngIf="message.childName">
+                <mat-icon>person</mat-icon>
+                {{ message.childName }}
+              </span>
+              <span class="content-preview">{{ message.content | slice:0:100 }}...</span>
+            </div>
+
+            <div class="message-actions">
+              <button mat-icon-button (click)="replyToMessage(message); $event.stopPropagation()" matTooltip="Responder">
+                <mat-icon>reply</mat-icon>
+              </button>
+            </div>
+          </mat-list-item>
+        </mat-list>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Message Detail -->
+    <mat-card *ngIf="selectedMessage()" class="detail-card">
+      <mat-card-header>
+        <mat-card-title>{{ selectedMessage()!.subject }}</mat-card-title>
+        <mat-card-subtitle>
+          <div class="message-meta">
+            <span>De: {{ selectedMessage()!.sender.name }}</span>
+            <span>{{ formatDate(selectedMessage()!.timestamp) }}</span>
+          </div>
+        </mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="message-content">
+          <p>{{ selectedMessage()!.content }}</p>
+        </div>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-raised-button color="primary" (click)="replyToMessage(selectedMessage()!)">
+          <mat-icon>reply</mat-icon>
+          Responder
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>
