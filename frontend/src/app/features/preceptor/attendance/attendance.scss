@@ -1,0 +1,370 @@
+.preceptor-attendance {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.attendance-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.header-content h1 {
+  margin: 0 0 var(--space-1) 0;
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.header-content p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 16px;
+}
+
+.header-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+// Filters Card
+.filters-card {
+  margin-bottom: var(--space-4);
+  
+  .mat-mdc-card-header {
+    .mat-mdc-card-title {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+  }
+}
+
+.filters-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+// Summary Statistics
+.summary-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.stat-card {
+  .mat-mdc-card-content {
+    padding: var(--space-3) !important;
+  }
+  
+  .stat-content {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+  
+  .mat-icon {
+    font-size: 32px;
+    width: 32px;
+    height: 32px;
+  }
+  
+  .stat-info {
+    flex: 1;
+  }
+  
+  .stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: var(--space-1);
+  }
+  
+  .stat-label {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+  
+  &.success {
+    .mat-icon {
+      color: var(--interactive-success);
+    }
+    .stat-value {
+      color: var(--interactive-success);
+    }
+  }
+  
+  &.warning {
+    .mat-icon {
+      color: var(--interactive-warning);
+    }
+    .stat-value {
+      color: var(--interactive-warning);
+    }
+  }
+  
+  &.danger {
+    .mat-icon {
+      color: var(--interactive-danger);
+    }
+    .stat-value {
+      color: var(--interactive-danger);
+    }
+  }
+  
+  &.primary {
+    .mat-icon {
+      color: var(--interactive-primary);
+    }
+    .stat-value {
+      color: var(--interactive-primary);
+    }
+  }
+}
+
+// Attendance Table Card
+.attendance-table-card {
+  .mat-mdc-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    
+    .mat-mdc-card-title {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    
+    .card-actions {
+      margin-left: auto;
+    }
+  }
+}
+
+// Loading and No Data States
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8) var(--space-4);
+  
+  p {
+    margin-top: var(--space-3);
+    color: var(--text-secondary);
+    font-size: 16px;
+  }
+}
+
+.no-data {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8) var(--space-4);
+  text-align: center;
+  
+  .mat-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    margin-bottom: var(--space-3);
+    opacity: 0.6;
+    color: var(--text-secondary);
+  }
+  
+  h3 {
+    margin: 0 0 var(--space-2) 0;
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+  
+  p {
+    margin: 0 0 var(--space-4) 0;
+    color: var(--text-secondary);
+    max-width: 400px;
+  }
+}
+
+// Attendance Table
+.attendance-table {
+  width: 100%;
+  
+  .attendance-row {
+    &:hover {
+      background: var(--bg-hover);
+    }
+  }
+}
+
+// Table Cell Styles
+.student-info {
+  .student-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+  }
+  
+  .student-dni {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+}
+
+.division-chip {
+  font-size: 12px !important;
+  height: 24px !important;
+  line-height: 24px !important;
+}
+
+.time-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  
+  .time-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: var(--text-secondary);
+  }
+  
+  .time-value {
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+}
+
+.status-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  
+  .status-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.device-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  
+  .device-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: var(--text-secondary);
+  }
+  
+  .device-name {
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+}
+
+.actions-buttons {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  
+  button {
+    width: 32px;
+    height: 32px;
+    
+    .mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+  }
+}
+
+// Table Footer
+.table-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--border-light);
+  margin-top: var(--space-3);
+  
+  .footer-info {
+    color: var(--text-secondary);
+    font-size: 14px;
+  }
+  
+  .footer-actions {
+    display: flex;
+    gap: var(--space-2);
+  }
+}
+
+// Responsive Design
+@media (max-width: 1200px) {
+  .filters-form {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .attendance-header {
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  
+  .summary-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .filters-form {
+    grid-template-columns: 1fr;
+  }
+  
+  .table-footer {
+    flex-direction: column;
+    gap: var(--space-2);
+    align-items: stretch;
+  }
+  
+  // Hide some columns on mobile
+  .attendance-table {
+    .mat-column-device,
+    .mat-column-division {
+      display: none;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .summary-stats {
+    grid-template-columns: 1fr;
+  }
+  
+  .attendance-table {
+    .mat-column-type {
+      display: none;
+    }
+  }
+  
+  .actions-buttons {
+    flex-direction: column;
+    gap: 2px;
+  }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .attendance-row:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+}

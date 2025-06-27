@@ -1,0 +1,264 @@
+<div class="preceptor-attendance">
+  <!-- Header Section -->
+  <div class="attendance-header">
+    <div class="header-content">
+      <h1>Gestión de Asistencia</h1>
+      <p>Control y monitoreo de asistencia estudiantil</p>
+    </div>
+    <div class="header-actions">
+      <button mat-raised-button color="accent" (click)="markAttendanceManually()">
+        <mat-icon>how_to_reg</mat-icon>
+        Registro Manual
+      </button>
+      <button mat-raised-button color="primary" (click)="refreshData()">
+        <mat-icon>refresh</mat-icon>
+        Actualizar
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters Section -->
+  <mat-card class="filters-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>filter_list</mat-icon>
+        Filtros de Búsqueda
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="filtersForm" class="filters-form">
+        <mat-form-field appearance="outline">
+          <mat-label>Fecha</mat-label>
+          <input matInput [matDatepicker]="picker" formControlName="selectedDate">
+          <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>División</mat-label>
+          <mat-select formControlName="division">
+            <mat-option value="">Todas las divisiones</mat-option>
+            <mat-option *ngFor="let division of divisions" [value]="division.id">
+              {{ division.nombre }} - {{ division.Curso?.nombre }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Tipo de Registro</mat-label>
+          <mat-select formControlName="attendanceType">
+            <mat-option value="">Todos los tipos</mat-option>
+            <mat-option value="ingreso">Ingreso</mat-option>
+            <mat-option value="egreso">Egreso</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Buscar estudiante</mat-label>
+          <input matInput formControlName="search" placeholder="Nombre, apellido o DNI">
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Summary Statistics -->
+  <div class="summary-stats">
+    <mat-card class="stat-card success">
+      <mat-card-content>
+        <div class="stat-content">
+          <mat-icon>check_circle</mat-icon>
+          <div class="stat-info">
+            <div class="stat-value">{{ summaryStats.totalPresent }}</div>
+            <div class="stat-label">Presentes</div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card warning">
+      <mat-card-content>
+        <div class="stat-content">
+          <mat-icon>schedule</mat-icon>
+          <div class="stat-info">
+            <div class="stat-value">{{ summaryStats.totalLate }}</div>
+            <div class="stat-label">Tardanzas</div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card danger">
+      <mat-card-content>
+        <div class="stat-content">
+          <mat-icon>cancel</mat-icon>
+          <div class="stat-info">
+            <div class="stat-value">{{ summaryStats.totalAbsent }}</div>
+            <div class="stat-label">Ausentes</div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card primary">
+      <mat-card-content>
+        <div class="stat-content">
+          <mat-icon>assessment</mat-icon>
+          <div class="stat-info">
+            <div class="stat-value">{{ summaryStats.attendanceRate }}%</div>
+            <div class="stat-label">Asistencia</div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Attendance Records Table -->
+  <mat-card class="attendance-table-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>list</mat-icon>
+        Registros de Asistencia
+      </mat-card-title>
+      <mat-card-subtitle>
+        {{ attendanceRecords.length }} registros encontrados
+      </mat-card-subtitle>
+      <div class="card-actions">
+        <button mat-button color="primary" (click)="exportAttendance()">
+          <mat-icon>download</mat-icon>
+          Exportar
+        </button>
+      </div>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="loading-container">
+        <mat-spinner diameter="32"></mat-spinner>
+        <p>Cargando registros de asistencia...</p>
+      </div>
+
+      <!-- No Data State -->
+      <div *ngIf="!isLoading && attendanceRecords.length === 0" class="no-data">
+        <mat-icon>info</mat-icon>
+        <h3>No hay registros de asistencia</h3>
+        <p>No se encontraron registros para los filtros seleccionados.</p>
+        <button mat-raised-button color="primary" (click)="markAttendanceManually()">
+          <mat-icon>add</mat-icon>
+          Registrar Asistencia Manual
+        </button>
+      </div>
+
+      <!-- Attendance Table -->
+      <table mat-table [dataSource]="attendanceRecords" class="attendance-table" *ngIf="!isLoading && attendanceRecords.length > 0">
+        
+        <!-- Student Column -->
+        <ng-container matColumnDef="student">
+          <th mat-header-cell *matHeaderCellDef> Estudiante </th>
+          <td mat-cell *matCellDef="let record">
+            <div class="student-info">
+              <div class="student-name">{{ record.student.name }}</div>
+              <div class="student-dni">DNI: {{ record.student.dni }}</div>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Division Column -->
+        <ng-container matColumnDef="division">
+          <th mat-header-cell *matHeaderCellDef> División </th>
+          <td mat-cell *matCellDef="let record">
+            <mat-chip class="division-chip">{{ record.division }}</mat-chip>
+          </td>
+        </ng-container>
+
+        <!-- Time Column -->
+        <ng-container matColumnDef="time">
+          <th mat-header-cell *matHeaderCellDef> Hora </th>
+          <td mat-cell *matCellDef="let record">
+            <div class="time-info">
+              <mat-icon class="time-icon">{{ getTypeIcon(record.type) }}</mat-icon>
+              <span class="time-value">{{ record.time }}</span>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Type Column -->
+        <ng-container matColumnDef="type">
+          <th mat-header-cell *matHeaderCellDef> Tipo </th>
+          <td mat-cell *matCellDef="let record">
+            <mat-chip [color]="record.type === 'ingreso' ? 'primary' : 'accent'">
+              {{ record.type | titlecase }}
+            </mat-chip>
+          </td>
+        </ng-container>
+
+        <!-- Status Column -->
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef> Estado </th>
+          <td mat-cell *matCellDef="let record">
+            <div class="status-info">
+              <mat-icon class="status-icon" [style.color]="getStatusChipColor(record.status) === 'primary' ? '#2196f3' : getStatusChipColor(record.status) === 'accent' ? '#ff9800' : '#f44336'">
+                {{ getStatusIcon(record.status) }}
+              </mat-icon>
+              <mat-chip [color]="getStatusChipColor(record.status)">
+                {{ record.status | titlecase }}
+              </mat-chip>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Device Column -->
+        <ng-container matColumnDef="device">
+          <th mat-header-cell *matHeaderCellDef> Dispositivo </th>
+          <td mat-cell *matCellDef="let record">
+            <div class="device-info">
+              <mat-icon class="device-icon">devices</mat-icon>
+              <span class="device-name">{{ record.device }}</span>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Actions Column -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef> Acciones </th>
+          <td mat-cell *matCellDef="let record">
+            <div class="actions-buttons">
+              <button mat-icon-button 
+                      matTooltip="Ver estudiante" 
+                      (click)="viewStudentDetail(record.student)">
+                <mat-icon>person</mat-icon>
+              </button>
+              <button mat-icon-button 
+                      matTooltip="Editar registro" 
+                      (click)="editAttendanceRecord(record)">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button 
+                      matTooltip="Eliminar registro" 
+                      color="warn"
+                      (click)="deleteAttendanceRecord(record)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="attendance-row"></tr>
+      </table>
+
+      <!-- Table Footer -->
+      <div class="table-footer" *ngIf="!isLoading && attendanceRecords.length > 0">
+        <div class="footer-info">
+          <span>Mostrando {{ attendanceRecords.length }} registros</span>
+        </div>
+        <div class="footer-actions">
+          <button mat-button (click)="exportAttendance()">
+            <mat-icon>file_download</mat-icon>
+            Exportar a Excel
+          </button>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

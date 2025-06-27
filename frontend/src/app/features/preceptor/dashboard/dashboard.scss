@@ -1,0 +1,411 @@
+.preceptor-dashboard {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.header-content h1 {
+  margin: 0 0 var(--space-1) 0;
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.header-content p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 16px;
+}
+
+.header-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8) var(--space-4);
+  
+  p {
+    margin-top: var(--space-3);
+    color: var(--text-secondary);
+    font-size: 16px;
+  }
+}
+
+.dashboard-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+// Statistics Cards
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--space-4);
+}
+
+.stat-card {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  }
+  
+  .mat-mdc-card-content {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4) !important;
+  }
+  
+  .stat-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    .mat-icon {
+      font-size: 28px;
+      width: 28px;
+      height: 28px;
+      color: white;
+    }
+  }
+  
+  .stat-info {
+    flex: 1;
+  }
+  
+  .stat-value {
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: var(--space-1);
+  }
+  
+  .stat-label {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+  
+  &.primary {
+    .stat-icon {
+      background: var(--interactive-primary);
+    }
+    .stat-value {
+      color: var(--interactive-primary);
+    }
+  }
+  
+  &.success {
+    .stat-icon {
+      background: var(--interactive-success);
+    }
+    .stat-value {
+      color: var(--interactive-success);
+    }
+  }
+  
+  &.warning {
+    .stat-icon {
+      background: var(--interactive-warning);
+    }
+    .stat-value {
+      color: var(--interactive-warning);
+    }
+  }
+  
+  &.danger {
+    .stat-icon {
+      background: var(--interactive-danger);
+    }
+    .stat-value {
+      color: var(--interactive-danger);
+    }
+  }
+}
+
+// Charts Section
+.charts-section {
+  .chart-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+  }
+  
+  .chart-card {
+    .mat-mdc-card-content {
+      padding: var(--space-4) !important;
+    }
+    
+    .chart-container {
+      height: 300px;
+      position: relative;
+    }
+  }
+}
+
+// Main Content
+.main-content-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--space-4);
+}
+
+.divisions-card,
+.activity-card {
+  .mat-mdc-card-header {
+    .mat-mdc-card-title {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+  }
+}
+
+// Attendance Table
+.attendance-table {
+  width: 100%;
+  
+  .division-info {
+    .division-name {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    
+    .division-course {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+  }
+  
+  .present-count {
+    color: var(--interactive-success);
+    font-weight: 600;
+  }
+  
+  .absent-count {
+    color: var(--interactive-danger);
+    font-weight: 600;
+  }
+  
+  .late-count {
+    color: var(--interactive-warning);
+    font-weight: 600;
+  }
+}
+
+// Activity List
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-2);
+  background: var(--bg-hover);
+  transition: background-color 0.2s ease;
+  
+  &:hover {
+    background: var(--bg-selected);
+  }
+}
+
+.activity-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(var(--interactive-primary-rgb), 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  .mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.activity-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.activity-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
+}
+
+.activity-student {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.activity-status {
+  font-size: 11px !important;
+  height: 20px !important;
+  line-height: 20px !important;
+}
+
+.activity-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.activity-footer {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-light);
+  text-align: center;
+}
+
+// Quick Actions
+.quick-actions {
+  .actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-3);
+    
+    button {
+      justify-content: flex-start;
+      gap: var(--space-2);
+      padding: var(--space-3) var(--space-4);
+      
+      .mat-icon {
+        margin-right: 0;
+      }
+    }
+  }
+}
+
+// No Data State
+.no-data {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6) var(--space-4);
+  color: var(--text-secondary);
+  
+  .mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: var(--space-2);
+    opacity: 0.6;
+  }
+  
+  p {
+    margin: 0;
+    text-align: center;
+  }
+}
+
+// Responsive Design
+@media (max-width: 1200px) {
+  .charts-section .chart-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .main-content-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-header {
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .quick-actions .actions-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .activity-main {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-1);
+  }
+}
+
+// Force Light Mode - Override any dark mode CSS rules
+@media (prefers-color-scheme: dark) {
+  .preceptor-dashboard {
+    background-color: #f5f5f5 !important;
+    color: #333333 !important;
+  }
+  
+  .dashboard-header,
+  .stat-card,
+  .divisions-card,
+  .activity-card,
+  .chart-card {
+    background-color: #ffffff !important;
+    color: #333333 !important;
+    border-color: #e0e0e0 !important;
+  }
+  
+  .header-content h1,
+  .stat-value,
+  .division-name,
+  .activity-student {
+    color: #333333 !important;
+  }
+  
+  .header-content p,
+  .stat-label,
+  .division-course,
+  .activity-meta {
+    color: #666666 !important;
+  }
+  
+  .activity-item {
+    background-color: #ffffff !important;
+    color: #333333 !important;
+    
+    &:hover {
+      background-color: #f5f5f5 !important;
+    }
+  }
+  
+  .stat-icon {
+    background: #1976d2 !important;
+    color: #ffffff !important;
+  }
+}

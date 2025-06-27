@@ -10,7 +10,10 @@ import horarioRoutes from './routes/horarioRoutes';
 import logRoutes from './routes/logRoutes';
 import reportRoutes from './routes/reportRoutes';
 import dashboardRoutes from './routes/dashboardRoutes';
+import studentRoutes from './routes/studentRoutes';
 import testRoutes from './routes/testRoutes';
+import preceptorRoutes from './routes/preceptorRoutes';
+import professorRoutes from './routes/professorRoutes';
 import { authenticate } from './middlewares/authMiddleware';
 import { errorHandler } from './middlewares/errorHandler';
 import { sequelize } from './models';
@@ -42,6 +45,9 @@ app.use('/api/horarios', authenticate, horarioRoutes);
 app.use('/api/logs', authenticate, logRoutes);
 app.use('/api/reports', authenticate, reportRoutes);
 app.use('/api/dashboard', authenticate, dashboardRoutes);
+app.use('/api/student', studentRoutes);
+app.use('/api/preceptor', preceptorRoutes);
+app.use('/api/professor', professorRoutes);
 
 // Middleware de manejo de errores
 app.use(errorHandler);

@@ -1,0 +1,62 @@
+<mat-sidenav-container class="sidenav-container">
+  <mat-sidenav #drawer class="sidenav" mode="side" opened="true">
+    <div class="sidebar-header">
+      <div class="brand">
+        <mat-icon>security</mat-icon>
+        <h2>Portal Preceptor</h2>
+      </div>
+    </div>
+    
+    <mat-nav-list>
+      <!-- Dashboard -->
+      <a mat-list-item routerLink="/preceptor/dashboard" routerLinkActive="active">
+        <mat-icon matListItemIcon>dashboard</mat-icon>
+        <span matListItemTitle>Dashboard</span>
+      </a>
+      
+      <!-- Alertas -->
+      <a mat-list-item routerLink="/preceptor/alerts" routerLinkActive="active">
+        <mat-icon matListItemIcon>notifications</mat-icon>
+        <span matListItemTitle>Alertas</span>
+      </a>
+      
+      <!-- Asistencia -->
+      <a mat-list-item routerLink="/preceptor/attendance" routerLinkActive="active">
+        <mat-icon matListItemIcon>how_to_reg</mat-icon>
+        <span matListItemTitle>Control de Asistencia</span>
+      </a>
+      
+      <!-- Estudiantes -->
+      <a mat-list-item routerLink="/preceptor/students" routerLinkActive="active">
+        <mat-icon matListItemIcon>people</mat-icon>
+        <span matListItemTitle>Estudiantes</span>
+      </a>
+      
+      <!-- Mensajería -->
+      <a mat-list-item routerLink="/preceptor/mensajeria" routerLinkActive="active">
+        <mat-icon matListItemIcon>chat</mat-icon>
+        <span matListItemTitle>Mensajes</span>
+      </a>
+      
+    </mat-nav-list>
+  </mat-sidenav>
+  
+  <mat-sidenav-content>
+    <mat-toolbar color="primary">
+      <button mat-icon-button (click)="drawer.toggle()">
+        <mat-icon>menu</mat-icon>
+      </button>
+      <span>Portal del Preceptor</span>
+      <span class="spacer"></span>
+      <app-role-selector></app-role-selector>
+      <span class="user-info">{{ getUserFullName() }}</span>
+      <button mat-icon-button (click)="logout()">
+        <mat-icon>logout</mat-icon>
+      </button>
+    </mat-toolbar>
+    
+    <main class="main-content">
+      <router-outlet></router-outlet>
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

@@ -1,0 +1,306 @@
+<div class="preceptor-students">
+  <!-- Header Section -->
+  <div class="students-header">
+    <div class="header-content">
+      <h1>Gestión de Estudiantes</h1>
+      <p>Administración y monitoreo de estudiantes</p>
+    </div>
+    <div class="header-actions">
+      <button mat-raised-button color="accent" (click)="addStudent()">
+        <mat-icon>person_add</mat-icon>
+        Nuevo Estudiante
+      </button>
+      <button mat-raised-button color="primary" (click)="refreshData()">
+        <mat-icon>refresh</mat-icon>
+        Actualizar
+      </button>
+    </div>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="stats-grid">
+    <mat-card class="stat-card primary">
+      <mat-card-content>
+        <div class="stat-content">
+          <mat-icon>school</mat-icon>
+          <div class="stat-info">
+            <div class="stat-value">{{ stats.totalStudents }}</div>
+            <div class="stat-label">Total Estudiantes</div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card success">
+      <mat-card-content>
+        <div class="stat-content">
+          <mat-icon>check_circle</mat-icon>
+          <div class="stat-info">
+            <div class="stat-value">{{ stats.activeStudents }}</div>
+            <div class="stat-label">Activos</div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card warning">
+      <mat-card-content>
+        <div class="stat-content">
+          <mat-icon>fingerprint</mat-icon>
+          <div class="stat-info">
+            <div class="stat-value">{{ stats.withFingerprint }}</div>
+            <div class="stat-label">Con Huella</div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card danger">
+      <mat-card-content>
+        <div class="stat-content">
+          <mat-icon>warning</mat-icon>
+          <div class="stat-info">
+            <div class="stat-value">{{ stats.withoutFingerprint }}</div>
+            <div class="stat-label">Sin Huella</div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Filters Section -->
+  <mat-card class="filters-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>filter_list</mat-icon>
+        Filtros de Búsqueda
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="filtersForm" class="filters-form">
+        <mat-form-field appearance="outline">
+          <mat-label>Buscar estudiante</mat-label>
+          <input matInput formControlName="search" placeholder="Nombre, DNI o email">
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>División</mat-label>
+          <mat-select formControlName="division">
+            <mat-option value="">Todas las divisiones</mat-option>
+            <mat-option *ngFor="let division of divisions" [value]="division.nombre">
+              {{ division.nombre }} - {{ division.Curso?.nombre }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Estado</mat-label>
+          <mat-select formControlName="status">
+            <mat-option value="">Todos los estados</mat-option>
+            <mat-option value="active">Activo</mat-option>
+            <mat-option value="inactive">Inactivo</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Estado de Huella</mat-label>
+          <mat-select formControlName="fingerprintStatus">
+            <mat-option value="">Todos</mat-option>
+            <mat-option value="with">Con huella registrada</mat-option>
+            <mat-option value="without">Sin huella registrada</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Students Table -->
+  <mat-card class="students-table-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>list</mat-icon>
+        Lista de Estudiantes
+      </mat-card-title>
+      <mat-card-subtitle>
+        {{ students.length }} estudiantes encontrados
+      </mat-card-subtitle>
+      <div class="card-actions">
+        <button mat-button color="primary" (click)="exportStudents()">
+          <mat-icon>download</mat-icon>
+          Exportar
+        </button>
+      </div>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="loading-container">
+        <mat-spinner diameter="32"></mat-spinner>
+        <p>Cargando estudiantes...</p>
+      </div>
+
+      <!-- No Data State -->
+      <div *ngIf="!isLoading && students.length === 0" class="no-data">
+        <mat-icon>school</mat-icon>
+        <h3>No hay estudiantes</h3>
+        <p>No se encontraron estudiantes que coincidan con los filtros seleccionados.</p>
+        <button mat-raised-button color="primary" (click)="addStudent()">
+          <mat-icon>person_add</mat-icon>
+          Agregar Primer Estudiante
+        </button>
+      </div>
+
+      <!-- Students Table -->
+      <table mat-table [dataSource]="students" class="students-table" *ngIf="!isLoading && students.length > 0">
+        
+        <!-- Student Column -->
+        <ng-container matColumnDef="student">
+          <th mat-header-cell *matHeaderCellDef> Estudiante </th>
+          <td mat-cell *matCellDef="let student">
+            <div class="student-info">
+              <div class="student-avatar">
+                {{ student.firstName?.charAt(0) }}{{ student.lastName?.charAt(0) }}
+              </div>
+              <div class="student-details">
+                <div class="student-name">{{ student.name }}</div>
+                <div class="student-meta">
+                  <span class="student-dni">DNI: {{ student.dni }}</span>
+                  <span class="student-email">{{ student.email }}</span>
+                </div>
+              </div>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Division Column -->
+        <ng-container matColumnDef="division">
+          <th mat-header-cell *matHeaderCellDef> División </th>
+          <td mat-cell *matCellDef="let student">
+            <mat-chip class="division-chip">{{ student.division }}</mat-chip>
+          </td>
+        </ng-container>
+
+        <!-- Attendance Column -->
+        <ng-container matColumnDef="attendance">
+          <th mat-header-cell *matHeaderCellDef> Asistencia </th>
+          <td mat-cell *matCellDef="let student">
+            <div class="attendance-info">
+              <mat-chip [color]="getAttendanceChipColor(student.attendanceRate)">
+                {{ student.attendanceRate }}%
+              </mat-chip>
+              <button mat-icon-button 
+                      matTooltip="Ver historial de asistencia"
+                      (click)="viewAttendanceHistory(student)">
+                <mat-icon>history</mat-icon>
+              </button>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Fingerprint Column -->
+        <ng-container matColumnDef="fingerprint">
+          <th mat-header-cell *matHeaderCellDef> Huella </th>
+          <td mat-cell *matCellDef="let student">
+            <div class="fingerprint-info">
+              <mat-icon 
+                [style.color]="getFingerprintColor(student.hasFingerprint)"
+                [matTooltip]="student.hasFingerprint ? 'Huella registrada' : 'Sin huella registrada'">
+                {{ getFingerprintIcon(student.hasFingerprint) }}
+              </mat-icon>
+              <button 
+                mat-icon-button 
+                *ngIf="!student.hasFingerprint"
+                matTooltip="Registrar huella"
+                (click)="registerFingerprint(student)">
+                <mat-icon>add</mat-icon>
+              </button>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Last Access Column -->
+        <ng-container matColumnDef="lastAccess">
+          <th mat-header-cell *matHeaderCellDef> Último Acceso </th>
+          <td mat-cell *matCellDef="let student">
+            <div class="last-access-info">
+              <mat-icon class="access-icon">schedule</mat-icon>
+              <span class="access-time">{{ formatLastAccess(student.lastAccess) }}</span>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Status Column -->
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef> Estado </th>
+          <td mat-cell *matCellDef="let student">
+            <mat-chip [color]="getStatusChipColor(student.status)">
+              {{ student.status === 'active' ? 'Activo' : 'Inactivo' }}
+            </mat-chip>
+          </td>
+        </ng-container>
+
+        <!-- Actions Column -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef> Acciones </th>
+          <td mat-cell *matCellDef="let student">
+            <button mat-icon-button [matMenuTriggerFor]="actionsMenu" aria-label="Más acciones">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #actionsMenu="matMenu">
+              <button mat-menu-item (click)="viewStudentDetail(student)">
+                <mat-icon>person</mat-icon>
+                <span>Ver Detalle</span>
+              </button>
+              <button mat-menu-item (click)="editStudent(student)">
+                <mat-icon>edit</mat-icon>
+                <span>Editar</span>
+              </button>
+              <button mat-menu-item (click)="viewAttendanceHistory(student)">
+                <mat-icon>assignment</mat-icon>
+                <span>Historial Asistencia</span>
+              </button>
+              <button mat-menu-item (click)="sendNotification(student)">
+                <mat-icon>notifications</mat-icon>
+                <span>Enviar Notificación</span>
+              </button>
+              <mat-divider></mat-divider>
+              <button mat-menu-item 
+                      (click)="registerFingerprint(student)"
+                      *ngIf="!student.hasFingerprint">
+                <mat-icon>fingerprint</mat-icon>
+                <span>Registrar Huella</span>
+              </button>
+              <button mat-menu-item 
+                      (click)="toggleStudentStatus(student)"
+                      [class.danger-item]="student.status === 'active'">
+                <mat-icon>{{ student.status === 'active' ? 'block' : 'check_circle' }}</mat-icon>
+                <span>{{ student.status === 'active' ? 'Desactivar' : 'Activar' }}</span>
+              </button>
+            </mat-menu>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="student-row"></tr>
+      </table>
+
+      <!-- Table Footer -->
+      <div class="table-footer" *ngIf="!isLoading && students.length > 0">
+        <div class="footer-info">
+          <span>Mostrando {{ students.length }} estudiantes</span>
+        </div>
+        <div class="footer-actions">
+          <button mat-button (click)="exportStudents()">
+            <mat-icon>file_download</mat-icon>
+            Exportar a Excel
+          </button>
+          <button mat-raised-button color="primary" (click)="addStudent()">
+            <mat-icon>person_add</mat-icon>
+            Nuevo Estudiante
+          </button>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

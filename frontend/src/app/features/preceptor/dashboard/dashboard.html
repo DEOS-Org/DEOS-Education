@@ -1,0 +1,261 @@
+<div class="preceptor-dashboard">
+  <!-- Header Section -->
+  <div class="dashboard-header">
+    <div class="header-content">
+      <h1>Dashboard del Preceptor</h1>
+      <p>Vista general de la asistencia y gestión estudiantil</p>
+    </div>
+    <div class="header-actions">
+      <button mat-raised-button color="primary" (click)="refreshData()">
+        <mat-icon>refresh</mat-icon>
+        Actualizar
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <mat-progress-spinner diameter="48" mode="indeterminate"></mat-progress-spinner>
+    <p>Cargando datos del dashboard...</p>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div *ngIf="!isLoading" class="dashboard-content">
+    
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+      <mat-card class="stat-card primary" (click)="navigateTo('/preceptor/students')">
+        <mat-card-content>
+          <div class="stat-icon">
+            <mat-icon>school</mat-icon>
+          </div>
+          <div class="stat-info">
+            <div class="stat-value">{{ stats.totalStudents }}</div>
+            <div class="stat-label">Total Estudiantes</div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card success" (click)="navigateTo('/preceptor/attendance')">
+        <mat-card-content>
+          <div class="stat-icon">
+            <mat-icon>check_circle</mat-icon>
+          </div>
+          <div class="stat-info">
+            <div class="stat-value">{{ stats.presentToday }}</div>
+            <div class="stat-label">Presentes Hoy</div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card warning">
+        <mat-card-content>
+          <div class="stat-icon">
+            <mat-icon>schedule</mat-icon>
+          </div>
+          <div class="stat-info">
+            <div class="stat-value">{{ stats.lateToday }}</div>
+            <div class="stat-label">Tardanzas Hoy</div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card danger" (click)="navigateTo('/preceptor/alerts')">
+        <mat-card-content>
+          <div class="stat-icon">
+            <mat-icon>cancel</mat-icon>
+          </div>
+          <div class="stat-info">
+            <div class="stat-value">{{ stats.absentToday }}</div>
+            <div class="stat-label">Ausentes Hoy</div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="charts-section">
+      <div class="chart-row">
+        <!-- Attendance Chart -->
+        <mat-card class="chart-card">
+          <mat-card-header>
+            <mat-card-title>Asistencia de Hoy</mat-card-title>
+            <mat-card-subtitle>Distribución de presentes, ausentes y tardanzas</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="chart-container">
+              <canvas id="attendanceChart"></canvas>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Weekly Attendance Chart -->
+        <mat-card class="chart-card">
+          <mat-card-header>
+            <mat-card-title>Asistencia Semanal</mat-card-title>
+            <mat-card-subtitle>Tendencia de asistencia por día</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="chart-container">
+              <canvas id="weeklyChart"></canvas>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+
+    <!-- Main Content Row -->
+    <div class="main-content-row">
+      
+      <!-- Today's Attendance by Division -->
+      <mat-card class="divisions-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>class</mat-icon>
+            Asistencia por División - Hoy
+          </mat-card-title>
+          <mat-card-subtitle>{{ todayAttendance.length }} divisiones</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div *ngIf="todayAttendance.length === 0" class="no-data">
+            <mat-icon>info</mat-icon>
+            <p>No hay datos de asistencia disponibles</p>
+          </div>
+          
+          <table mat-table [dataSource]="todayAttendance" class="attendance-table" *ngIf="todayAttendance.length > 0">
+            
+            <!-- Division Column -->
+            <ng-container matColumnDef="division">
+              <th mat-header-cell *matHeaderCellDef> División </th>
+              <td mat-cell *matCellDef="let item">
+                <div class="division-info">
+                  <div class="division-name">{{ item.name }}</div>
+                  <div class="division-course">{{ item.course }}</div>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Present Column -->
+            <ng-container matColumnDef="present">
+              <th mat-header-cell *matHeaderCellDef> Presentes </th>
+              <td mat-cell *matCellDef="let item">
+                <span class="present-count">{{ item.present }}</span>
+              </td>
+            </ng-container>
+
+            <!-- Absent Column -->
+            <ng-container matColumnDef="absent">
+              <th mat-header-cell *matHeaderCellDef> Ausentes </th>
+              <td mat-cell *matCellDef="let item">
+                <span class="absent-count">{{ item.absent }}</span>
+              </td>
+            </ng-container>
+
+            <!-- Late Column -->
+            <ng-container matColumnDef="late">
+              <th mat-header-cell *matHeaderCellDef> Tardanzas </th>
+              <td mat-cell *matCellDef="let item">
+                <span class="late-count">{{ item.late }}</span>
+              </td>
+            </ng-container>
+
+            <!-- Percentage Column -->
+            <ng-container matColumnDef="percentage">
+              <th mat-header-cell *matHeaderCellDef> % Asistencia </th>
+              <td mat-cell *matCellDef="let item">
+                <mat-chip [color]="item.percentage >= 80 ? 'primary' : item.percentage >= 60 ? 'accent' : 'warn'">
+                  {{ item.percentage }}%
+                </mat-chip>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="['division', 'present', 'absent', 'late', 'percentage']"></tr>
+            <tr mat-row *matRowDef="let row; columns: ['division', 'present', 'absent', 'late', 'percentage'];"></tr>
+          </table>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Recent Activity -->
+      <mat-card class="activity-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>history</mat-icon>
+            Actividad Reciente
+          </mat-card-title>
+          <mat-card-subtitle>Últimos registros de asistencia</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div *ngIf="recentActivity.length === 0" class="no-data">
+            <mat-icon>info</mat-icon>
+            <p>No hay actividad reciente</p>
+          </div>
+
+          <div class="activity-list" *ngIf="recentActivity.length > 0">
+            <div 
+              *ngFor="let activity of recentActivity" 
+              class="activity-item">
+              <div class="activity-icon">
+                <mat-icon [style.color]="getStatusChipColor(activity.status) === 'primary' ? '#2196f3' : getStatusChipColor(activity.status) === 'accent' ? '#ff9800' : '#f44336'">
+                  {{ getStatusIcon(activity.status) }}
+                </mat-icon>
+              </div>
+              <div class="activity-content">
+                <div class="activity-main">
+                  <span class="activity-student">{{ activity.student }}</span>
+                  <mat-chip [color]="getStatusChipColor(activity.status)" class="activity-status">
+                    {{ activity.status }}
+                  </mat-chip>
+                </div>
+                <div class="activity-meta">
+                  <span class="activity-time">{{ activity.time }}</span>
+                  <span class="activity-division">{{ activity.division }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="activity-footer" *ngIf="recentActivity.length > 0">
+            <button mat-button color="primary" (click)="navigateTo('/preceptor/attendance')">
+              Ver todas las actividades
+            </button>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>flash_on</mat-icon>
+            Acciones Rápidas
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="actions-grid">
+            <button mat-raised-button color="primary" (click)="navigateTo('/preceptor/attendance/register')">
+              <mat-icon>how_to_reg</mat-icon>
+              Registrar Asistencia
+            </button>
+            
+            <button mat-raised-button color="accent" (click)="navigateTo('/preceptor/students/search')">
+              <mat-icon>search</mat-icon>
+              Buscar Estudiante
+            </button>
+            
+            <button mat-raised-button (click)="navigateTo('/preceptor/reports/daily')">
+              <mat-icon>today</mat-icon>
+              Reporte Diario
+            </button>
+            
+            <button mat-raised-button (click)="navigateTo('/preceptor/alerts/create')">
+              <mat-icon>add_alert</mat-icon>
+              Nueva Alerta
+            </button>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>
