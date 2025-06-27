@@ -1,0 +1,233 @@
+<div class="student-attendance">
+  <!-- Header -->
+  <div class="attendance-header">
+    <div class="header-content">
+      <h1>Mi Asistencia</h1>
+      <p>Historial y estadísticas de asistencia</p>
+    </div>
+    <div class="header-actions">
+      <button mat-icon-button (click)="refreshAttendance()" matTooltip="Actualizar">
+        <mat-icon>refresh</mat-icon>
+      </button>
+      <button mat-raised-button color="primary" (click)="exportAttendance()" matTooltip="Exportar datos">
+        <mat-icon>file_download</mat-icon>
+        Exportar
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <mat-spinner diameter="48"></mat-spinner>
+    <p>Cargando datos de asistencia...</p>
+  </div>
+
+  <!-- Attendance Content -->
+  <div *ngIf="!isLoading" class="attendance-content">
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+      <mat-card class="stat-card primary">
+        <mat-card-content>
+          <div class="stat-content">
+            <mat-icon>how_to_reg</mat-icon>
+            <div class="stat-info">
+              <div class="stat-value">{{ attendanceStats.percentage }}%</div>
+              <div class="stat-label">Asistencia Total</div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card success">
+        <mat-card-content>
+          <div class="stat-content">
+            <mat-icon>check_circle</mat-icon>
+            <div class="stat-info">
+              <div class="stat-value">{{ attendanceStats.present }}</div>
+              <div class="stat-label">Días Presentes</div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card warning">
+        <mat-card-content>
+          <div class="stat-content">
+            <mat-icon>event_busy</mat-icon>
+            <div class="stat-info">
+              <div class="stat-value">{{ attendanceStats.absent }}</div>
+              <div class="stat-label">Faltas</div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card info">
+        <mat-card-content>
+          <div class="stat-content">
+            <mat-icon>schedule</mat-icon>
+            <div class="stat-info">
+              <div class="stat-value">{{ attendanceStats.late }}</div>
+              <div class="stat-label">Llegadas Tarde</div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="charts-row">
+      <!-- Monthly Attendance Chart -->
+      <mat-card class="chart-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>trending_up</mat-icon>
+            Asistencia Mensual
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container">
+            <canvas id="monthlyAttendanceChart"></canvas>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Subject Attendance Chart -->
+      <mat-card class="chart-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>pie_chart</mat-icon>
+            Asistencia por Materia
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container">
+            <canvas id="subjectAttendanceChart"></canvas>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Filters -->
+    <mat-card class="filters-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>filter_list</mat-icon>
+          Filtros
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="filters-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Materia</mat-label>
+            <mat-select [(value)]="selectedSubject" (selectionChange)="applyFilters()">
+              <mat-option value="">Todas las materias</mat-option>
+              <mat-option *ngFor="let subject of availableSubjects" [value]="subject.id">
+                {{ subject.nombre }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Mes</mat-label>
+            <mat-select [(value)]="selectedMonth" (selectionChange)="applyFilters()">
+              <mat-option value="">Todos los meses</mat-option>
+              <mat-option *ngFor="let month of availableMonths" [value]="month.value">
+                {{ month.name }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Estado</mat-label>
+            <mat-select [(value)]="selectedStatus" (selectionChange)="applyFilters()">
+              <mat-option value="">Todos</mat-option>
+              <mat-option value="presente">Presente</mat-option>
+              <mat-option value="ausente">Ausente</mat-option>
+              <mat-option value="tarde">Tarde</mat-option>
+              <mat-option value="justificado">Justificado</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <button mat-raised-button (click)="clearFilters()" matTooltip="Limpiar filtros">
+            <mat-icon>clear</mat-icon>
+            Limpiar
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Attendance History Table -->
+    <mat-card class="history-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>history</mat-icon>
+          Historial de Asistencia
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div *ngIf="filteredAttendanceHistory.length === 0" class="no-data">
+          <mat-icon>event_available</mat-icon>
+          <p>No hay registros de asistencia para mostrar</p>
+        </div>
+
+        <div *ngIf="filteredAttendanceHistory.length > 0" class="table-container">
+          <table mat-table [dataSource]="filteredAttendanceHistory" class="attendance-table">
+            <!-- Date Column -->
+            <ng-container matColumnDef="fecha">
+              <th mat-header-cell *matHeaderCellDef>Fecha</th>
+              <td mat-cell *matCellDef="let record">
+                {{ formatDate(record.fecha) }}
+              </td>
+            </ng-container>
+
+            <!-- Subject Column -->
+            <ng-container matColumnDef="materia">
+              <th mat-header-cell *matHeaderCellDef>Materia</th>
+              <td mat-cell *matCellDef="let record">{{ record.materia }}</td>
+            </ng-container>
+
+            <!-- Time Column -->
+            <ng-container matColumnDef="hora">
+              <th mat-header-cell *matHeaderCellDef>Hora</th>
+              <td mat-cell *matCellDef="let record">{{ record.hora }}</td>
+            </ng-container>
+
+            <!-- Status Column -->
+            <ng-container matColumnDef="estado">
+              <th mat-header-cell *matHeaderCellDef>Estado</th>
+              <td mat-cell *matCellDef="let record">
+                <mat-chip [color]="getStatusColor(record.estado)">
+                  <mat-icon>{{ getStatusIcon(record.estado) }}</mat-icon>
+                  {{ record.estado | titlecase }}
+                </mat-chip>
+              </td>
+            </ng-container>
+
+            <!-- Arrival Time Column -->
+            <ng-container matColumnDef="hora_llegada">
+              <th mat-header-cell *matHeaderCellDef>Hora Llegada</th>
+              <td mat-cell *matCellDef="let record">
+                {{ record.hora_llegada || '-' }}
+              </td>
+            </ng-container>
+
+            <!-- Notes Column -->
+            <ng-container matColumnDef="observaciones">
+              <th mat-header-cell *matHeaderCellDef>Observaciones</th>
+              <td mat-cell *matCellDef="let record">
+                <span *ngIf="record.observaciones" matTooltip="{{ record.observaciones }}">
+                  <mat-icon>note</mat-icon>
+                </span>
+                <span *ngIf="!record.observaciones">-</span>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+          </table>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

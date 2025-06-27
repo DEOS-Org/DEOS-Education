@@ -1,0 +1,276 @@
+<div class="student-dashboard">
+  <!-- Header Section -->
+  <div class="dashboard-header">
+    <div class="welcome-section">
+      <h1 class="mat-display-1">
+        {{ getGreeting() }}, {{ currentUser?.nombre || 'Estudiante' }}
+      </h1>
+      <p class="mat-body-1 welcome-subtitle">
+        Bienvenido a tu portal estudiantil
+      </p>
+    </div>
+    
+    <button mat-raised-button color="primary" (click)="refreshDashboard()" [disabled]="isLoading">
+      <mat-icon>refresh</mat-icon>
+      Actualizar
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p class="mat-body-1">Cargando dashboard...</p>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div *ngIf="!isLoading" class="dashboard-content">
+    
+    <!-- Stats Cards Row -->
+    <div class="stats-row">
+      <mat-card class="stat-card attendance-card">
+        <mat-card-content>
+          <div class="stat-content">
+            <div class="stat-icon">
+              <mat-icon [color]="getAttendanceColor()">how_to_reg</mat-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">{{ stats.attendancePercentage }}%</div>
+              <div class="stat-label">Asistencia Semanal</div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card classes-card">
+        <mat-card-content>
+          <div class="stat-content">
+            <div class="stat-icon">
+              <mat-icon color="accent">schedule</mat-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">{{ stats.todayClasses }}</div>
+              <div class="stat-label">Clases Hoy</div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card average-card">
+        <mat-card-content>
+          <div class="stat-content">
+            <div class="stat-icon">
+              <mat-icon color="primary">grade</mat-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">{{ stats.averageGrade }}</div>
+              <div class="stat-label">Promedio General</div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card subjects-card">
+        <mat-card-content>
+          <div class="stat-content">
+            <div class="stat-icon">
+              <mat-icon color="warn">book</mat-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">{{ stats.totalSubjects }}</div>
+              <div class="stat-label">Materias</div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Main Content Row -->
+    <div class="main-content-row">
+      
+      <!-- Today's Schedule -->
+      <mat-card class="schedule-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>today</mat-icon>
+            Horario de Hoy
+          </mat-card-title>
+          <mat-card-subtitle>{{ new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div *ngIf="todaySchedule.length === 0" class="empty-state">
+            <mat-icon>event_busy</mat-icon>
+            <p>No hay clases programadas para hoy</p>
+          </div>
+          
+          <div *ngFor="let clase of todaySchedule" class="schedule-item">
+            <div class="schedule-time">
+              <span class="time-start">{{ formatTime(clase.hora_inicio) }}</span>
+              <span class="time-separator">-</span>
+              <span class="time-end">{{ formatTime(clase.hora_fin) }}</span>
+            </div>
+            <div class="schedule-info">
+              <div class="subject-name">{{ clase.materia_nombre || clase.materia }}</div>
+              <div class="professor-name">{{ clase.profesor_nombre }} {{ clase.profesor_apellido }}</div>
+              <div class="classroom">{{ clase.aula }}</div>
+            </div>
+            <div class="schedule-status">
+              <mat-chip [color]="getScheduleStatusColor(clase.estado)" selected>
+                {{ clase.estado || 'pendiente' }}
+              </mat-chip>
+            </div>
+          </div>
+        </mat-card-content>
+        <mat-card-actions>
+          <button mat-button routerLink="/student/schedule">
+            <mat-icon>schedule</mat-icon>
+            Ver Horario Completo
+          </button>
+        </mat-card-actions>
+      </mat-card>
+
+      <!-- Recent Grades -->
+      <mat-card class="grades-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>grade</mat-icon>
+            Calificaciones Recientes
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div *ngIf="recentGrades.length === 0" class="empty-state">
+            <mat-icon>grade</mat-icon>
+            <p>No hay calificaciones recientes</p>
+          </div>
+          
+          <div *ngFor="let grade of recentGrades" class="grade-item">
+            <div class="grade-icon">
+              <mat-icon [color]="getGradeColor(grade.nota || grade.calificacion)">
+                {{ getGradeTypeIcon(grade.tipo) }}
+              </mat-icon>
+            </div>
+            <div class="grade-info">
+              <div class="grade-subject">{{ grade.materia_nombre || grade.materia }}</div>
+              <div class="grade-evaluation">{{ grade.descripcion || grade.evaluacion }}</div>
+              <div class="grade-date">{{ formatTimeAgo(grade.fecha) }}</div>
+            </div>
+            <div class="grade-value">
+              <span class="grade-number" [ngClass]="getGradeColor(grade.nota || grade.calificacion)">
+                {{ grade.nota || grade.calificacion }}
+              </span>
+            </div>
+          </div>
+        </mat-card-content>
+        <mat-card-actions>
+          <button mat-button routerLink="/student/grades">
+            <mat-icon>assignment</mat-icon>
+            Ver Todas las Calificaciones
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="charts-row">
+      
+      <!-- Attendance Chart -->
+      <mat-card class="chart-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>trending_up</mat-icon>
+            Tendencia de Asistencia
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container">
+            <canvas id="attendanceChart"></canvas>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Grades Distribution Chart -->
+      <mat-card class="chart-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>pie_chart</mat-icon>
+            Distribución de Calificaciones
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container">
+            <canvas id="gradesChart"></canvas>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Upcoming Events -->
+    <mat-card class="events-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>event</mat-icon>
+          Próximos Eventos
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div *ngIf="upcomingEvents.length === 0" class="empty-state">
+          <mat-icon>event_available</mat-icon>
+          <p>No hay eventos próximos</p>
+        </div>
+        
+        <div *ngFor="let event of upcomingEvents" class="event-item">
+          <div class="event-date">
+            <div class="event-day">{{ formatDate(event.fecha).split('/')[0] }}</div>
+            <div class="event-month">{{ formatDate(event.fecha).split('/')[1] }}</div>
+          </div>
+          <div class="event-info">
+            <div class="event-title">{{ event.titulo }}</div>
+            <div class="event-subject">{{ event.materia_nombre || event.materia }}</div>
+            <div class="event-time">{{ formatTime(event.hora) }}</div>
+          </div>
+          <div class="event-type">
+            <mat-chip [color]="getEventTypeColor(event.tipo)" selected>
+              {{ event.tipo }}
+            </mat-chip>
+          </div>
+        </div>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-button routerLink="/student/calendar">
+          <mat-icon>calendar_today</mat-icon>
+          Ver Calendario Completo
+        </button>
+      </mat-card-actions>
+    </mat-card>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+      <h3 class="mat-h3">Acciones Rápidas</h3>
+      <div class="actions-grid">
+        <button mat-raised-button color="primary" routerLink="/student/attendance">
+          <mat-icon>how_to_reg</mat-icon>
+          Mi Asistencia
+        </button>
+        <button mat-raised-button color="accent" routerLink="/student/grades">
+          <mat-icon>grade</mat-icon>
+          Mis Calificaciones
+        </button>
+        <button mat-raised-button routerLink="/student/subjects">
+          <mat-icon>book</mat-icon>
+          Mis Materias
+        </button>
+        <button mat-raised-button routerLink="/student/assignments">
+          <mat-icon>assignment</mat-icon>
+          Mis Tareas
+        </button>
+        <button mat-raised-button routerLink="/student/schedule">
+          <mat-icon>schedule</mat-icon>
+          Mi Horario
+        </button>
+        <button mat-raised-button routerLink="/student/profile">
+          <mat-icon>person</mat-icon>
+          Mi Perfil
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
