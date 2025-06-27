@@ -1,0 +1,199 @@
+<div class="notification-center">
+  <!-- Header -->
+  <div class="notification-header">
+    <div class="header-content">
+      <h1 class="page-title">
+        <mat-icon>notifications</mat-icon>
+        Centro de Notificaciones
+      </h1>
+      <div class="header-actions">
+        <button 
+          mat-raised-button 
+          color="primary"
+          (click)="refreshNotifications()"
+          [disabled]="isLoading">
+          <mat-icon>refresh</mat-icon>
+          Actualizar
+        </button>
+        <button 
+          mat-raised-button 
+          color="accent"
+          (click)="markAllAsRead()"
+          [disabled]="getUnreadNotificationsCount() === 0">
+          <mat-icon>done_all</mat-icon>
+          Marcar todas como leídas
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading bar -->
+  <mat-progress-bar *ngIf="isLoading" mode="indeterminate"></mat-progress-bar>
+
+  <!-- Main content -->
+  <mat-card class="notification-content">
+    <!-- Tabs for filtering -->
+    <mat-tab-group 
+      [(selectedIndex)]="selectedTab"
+      (selectedTabChange)="onTabChange($event)"
+      class="filter-tabs">
+      
+      <mat-tab label="Todas">
+        <div class="tab-content">
+          <p class="tab-description">Todas las notificaciones</p>
+        </div>
+      </mat-tab>
+      
+      <mat-tab label="No leídas">
+        <div class="tab-content">
+          <p class="tab-description">Notificaciones no leídas</p>
+          <mat-chip-set>
+            <mat-chip color="warn">{{ getUnreadNotificationsCount() }} no leídas</mat-chip>
+          </mat-chip-set>
+        </div>
+      </mat-tab>
+      
+      <mat-tab label="Por tipo">
+        <div class="tab-content">
+          <p class="tab-description">Filtrar por tipo de notificación</p>
+          <mat-form-field appearance="outline" class="type-filter">
+            <mat-label>Tipo de notificación</mat-label>
+            <mat-select 
+              [(value)]="typeFilter" 
+              (selectionChange)="onTypeFilterChange()">
+              <mat-option *ngFor="let type of notificationTypes" [value]="type.value">
+                {{ type.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+
+    <!-- Notifications list -->
+    <div class="notifications-container">
+      <!-- Empty state -->
+      <div *ngIf="!isLoading && notifications.length === 0" class="empty-state">
+        <mat-icon class="empty-icon">notifications_none</mat-icon>
+        <h3>No hay notificaciones</h3>
+        <p>No se encontraron notificaciones con los filtros aplicados.</p>
+      </div>
+
+      <!-- Notifications list -->
+      <div *ngIf="notifications.length > 0" class="notifications-list">
+        <mat-card 
+          *ngFor="let notification of notifications; trackBy: trackByNotificationId"
+          class="notification-card"
+          [class.unread]="!notification.leida"
+          (click)="onNotificationClick(notification)">
+          
+          <mat-card-header>
+            <div mat-card-avatar class="notification-avatar">
+              <mat-icon 
+                [style.color]="getNotificationColor(notification.tipo)"
+                class="notification-icon">
+                {{ getNotificationIcon(notification.tipo) }}
+              </mat-icon>
+            </div>
+            
+            <mat-card-title>
+              {{ notification.titulo }}
+              <mat-chip 
+                *ngIf="!notification.leida" 
+                class="unread-chip"
+                color="warn">
+                Nuevo
+              </mat-chip>
+            </mat-card-title>
+            
+            <mat-card-subtitle>
+              {{ formatTimeAgo(notification.fecha_creacion) }}
+              <span class="full-date" [matTooltip]="formatFullDate(notification.fecha_creacion)">
+                <mat-icon class="date-icon">schedule</mat-icon>
+              </span>
+            </mat-card-subtitle>
+            
+            <div class="notification-actions">
+              <button 
+                mat-icon-button 
+                (click)="markAsRead(notification, $event)"
+                [disabled]="notification.leida"
+                [matTooltip]="notification.leida ? 'Ya leída' : 'Marcar como leída'">
+                <mat-icon>{{ notification.leida ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+              </button>
+              
+              <button 
+                mat-icon-button 
+                [matMenuTriggerFor]="notificationMenu"
+                matTooltip="Más opciones">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              
+              <mat-menu #notificationMenu="matMenu">
+                <button 
+                  mat-menu-item 
+                  (click)="markAsRead(notification, $event)"
+                  [disabled]="notification.leida">
+                  <mat-icon>check</mat-icon>
+                  <span>Marcar como leída</span>
+                </button>
+                <button 
+                  mat-menu-item 
+                  (click)="deleteNotification(notification, $event)">
+                  <mat-icon>delete</mat-icon>
+                  <span>Eliminar</span>
+                </button>
+                <button 
+                  mat-menu-item 
+                  *ngIf="notification.accion_url"
+                  (click)="onNotificationClick(notification)">
+                  <mat-icon>open_in_new</mat-icon>
+                  <span>Ir a enlace</span>
+                </button>
+              </mat-menu>
+            </div>
+          </mat-card-header>
+          
+          <mat-card-content>
+            <p class="notification-message">{{ notification.mensaje }}</p>
+            
+            <!-- Notification type chip -->
+            <div class="notification-metadata">
+              <mat-chip-set>
+                <mat-chip 
+                  [style.background-color]="getNotificationColor(notification.tipo)"
+                  [style.color]="'white'"
+                  class="type-chip">
+                  <mat-icon matChipAvatar>{{ getNotificationIcon(notification.tipo) }}</mat-icon>
+                  {{ notification.tipo }}
+                </mat-chip>
+                
+                <mat-chip *ngIf="notification.usuario_id === null" class="global-chip">
+                  <mat-icon matChipAvatar>public</mat-icon>
+                  Global
+                </mat-chip>
+              </mat-chip-set>
+            </div>
+            
+            <!-- Additional metadata -->
+            <div *ngIf="notification.metadata" class="additional-metadata">
+              <mat-icon class="metadata-icon">info</mat-icon>
+              <span class="metadata-text">Información adicional disponible</span>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- Pagination -->
+      <mat-paginator 
+        *ngIf="totalNotifications > pageSize"
+        [length]="totalNotifications"
+        [pageSize]="pageSize"
+        [pageSizeOptions]="[10, 20, 50, 100]"
+        [pageIndex]="currentPage"
+        (page)="onPageChange($event)"
+        class="notification-paginator">
+      </mat-paginator>
+    </div>
+  </mat-card>
+</div>
